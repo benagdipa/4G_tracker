@@ -137,7 +137,7 @@ class SQLImportController extends Controller
 
             try {
                 if($db->dbtype=='starburst'){
-                    $command ='java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.'  --user '.$db->username.' --password --execute " '.$sql_code .' limit 1" --insecure';
+                    $command = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.'  --user '.$db->username.' --password --execute " '.$sql_code .' limit 1" --insecure';
                     $command3 = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.'  --user '.$db->username.' --password --execute "SELECT  column_name
                     FROM information_schema.columns
                     WHERE table_schema = \'' . $db->database . '\'
