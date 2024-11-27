@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 import { Card, CardBody, Typography, Button } from "@material-tailwind/react";
@@ -17,29 +17,40 @@ import {
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 export default function Dashboard({ auth }) {
-  const [tools, setTools] = useState([
-    {
-      id: 1,
-      name: "FWP Tracker",
-      description: "Track and manage fixed wireless performance.",
-      url: "https://fwpm.nwas.nbnco.net.au/dashboard/wireless-sites",
-      icon: "FiBarChart2",
-    },
-    {
-      id: 2,
-      name: "WNTD Overlay Tool",
-      description: "WNTD Reparenting and Load Balancing Tool.",
-      url: "https://fwpm.nwas.nbnco.net.au/overlay/",
-      icon: "FiLayers",
-    },
-    {
-      id: 3,
-      name: "Signaling Trace",
-      description: "Visualize LTE signaling traces.",
-      url: "https://fwpm.nwas.nbnco.net.au/signaling/",
-      icon: "FiWifi",
-    },
-  ]);
+  // Initialize tools from local storage or use default tools
+  const [tools, setTools] = useState(() => {
+    const savedTools = localStorage.getItem("tools");
+    return savedTools
+      ? JSON.parse(savedTools)
+      : [
+          {
+            id: 1,
+            name: "FWP Tracker",
+            description: "Track and manage FW performance.",
+            url: "https://fwpm.nwas.nbnco.net.au/dashboard/wireless-sites",
+            icon: "FiBarChart2",
+          },
+          {
+            id: 2,
+            name: "WNTD Overlay Tool",
+            description: "WNTD Reparenting and Load Balancing Tool.",
+            url: "https://fwpm.nwas.nbnco.net.au/overlay/",
+            icon: "FiLayers",
+          },
+          {
+            id: 3,
+            name: "UE Signaling Trace",
+            description: "Visualise LTE signaling traces.",
+            url: "https://fwpm.nwas.nbnco.net.au/signaling/",
+            icon: "FiWifi",
+          },
+        ];
+  });
+
+  // Save tools to local storage whenever the tools state changes
+  useEffect(() => {
+    localStorage.setItem("tools", JSON.stringify(tools));
+  }, [tools]);
 
   const [editTool, setEditTool] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
