@@ -1,10 +1,16 @@
 import React, { useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
-import { Card, CardBody, Typography, Button } from "@material-tailwind/react";
+import {
+  Card,
+  CardBody,
+  Typography,
+  Button,
+  Input,
+  Textarea,
+} from "@material-tailwind/react";
 
 export default function Dashboard({ auth }) {
-  // Initial tools data
   const [tools, setTools] = useState([
     {
       id: 1,
@@ -29,7 +35,12 @@ export default function Dashboard({ auth }) {
     },
   ]);
 
-  const [newTool, setNewTool] = useState({ name: "", description: "", url: "", icon: "" });
+  const [newTool, setNewTool] = useState({
+    name: "",
+    description: "",
+    url: "",
+    icon: "",
+  });
   const [editTool, setEditTool] = useState(null);
 
   // Add a new tool
@@ -56,26 +67,34 @@ export default function Dashboard({ auth }) {
   return (
     <AuthenticatedLayout user={auth.user}>
       <Head title="Dashboard" />
-      <div className="dashboard-page p-6">
-        <Typography variant="h3" color="blue-gray">
+      <div className="dashboard-page p-6 space-y-8">
+        {/* Page Title */}
+        <Typography
+          variant="h3"
+          color="blue-gray"
+          className="text-center font-bold"
+        >
           FW Performance Tools Selector
         </Typography>
 
-        {/* Tools List */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+        {/* Tools Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {tools.map((tool) => (
-            <Card key={tool.id} className="drop-shadow-md">
-              <CardBody className="text-center">
-                <i className={`${tool.icon} fa-3x text-primary mb-4`}></i>
-                <Typography variant="h6" color="blue-gray">
+            <Card
+              key={tool.id}
+              className="drop-shadow-md hover:shadow-lg transition-shadow duration-300"
+            >
+              <CardBody className="text-center space-y-4">
+                <i className={`${tool.icon} fa-3x text-blue-500`}></i>
+                <Typography variant="h6" className="text-gray-800 font-bold">
                   {tool.name}
                 </Typography>
-                <Typography variant="small" className="mb-4">
+                <Typography variant="small" className="text-gray-600">
                   {tool.description}
                 </Typography>
                 <a
                   href={tool.url}
-                  className="btn btn-primary"
+                  className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -86,8 +105,6 @@ export default function Dashboard({ auth }) {
                     size="sm"
                     color="amber"
                     onClick={() => setEditTool(tool)}
-                    data-bs-toggle="modal"
-                    data-bs-target="#editToolModal"
                   >
                     Edit
                   </Button>
@@ -104,151 +121,115 @@ export default function Dashboard({ auth }) {
           ))}
         </div>
 
-        {/* Add Tool Modal */}
-        <div className="modal fade" id="addToolModal" tabIndex="-1" aria-hidden="true">
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <form onSubmit={handleAddTool}>
-                <div className="modal-header">
-                  <Typography variant="h6">Add a New Tool</Typography>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    data-bs-dismiss="modal"
-                  ></button>
-                </div>
-                <div className="modal-body">
-                  <input
-                    type="text"
-                    className="form-control mb-3"
-                    placeholder="Tool Name"
-                    value={newTool.name}
-                    onChange={(e) =>
-                      setNewTool({ ...newTool, name: e.target.value })
-                    }
-                    required
-                  />
-                  <textarea
-                    className="form-control mb-3"
-                    placeholder="Description"
-                    value={newTool.description}
-                    onChange={(e) =>
-                      setNewTool({ ...newTool, description: e.target.value })
-                    }
-                    required
-                  ></textarea>
-                  <input
-                    type="url"
-                    className="form-control mb-3"
-                    placeholder="URL"
-                    value={newTool.url}
-                    onChange={(e) =>
-                      setNewTool({ ...newTool, url: e.target.value })
-                    }
-                    required
-                  />
-                  <input
-                    type="text"
-                    className="form-control mb-3"
-                    placeholder="Icon (e.g., fas fa-chart-line)"
-                    value={newTool.icon}
-                    onChange={(e) =>
-                      setNewTool({ ...newTool, icon: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    data-bs-dismiss="modal"
-                  >
-                    Cancel
-                  </button>
-                  <button type="submit" className="btn btn-success">
-                    Add Tool
-                  </button>
-                </div>
-              </form>
+        {/* Add Tool Form */}
+        <div className="bg-white p-6 rounded-md shadow-md max-w-xl mx-auto space-y-4">
+          <Typography
+            variant="h5"
+            className="text-blue-gray-800 font-bold text-center"
+          >
+            Add a New Tool
+          </Typography>
+          <form onSubmit={handleAddTool} className="space-y-4">
+            <Input
+              label="Tool Name"
+              value={newTool.name}
+              onChange={(e) =>
+                setNewTool({ ...newTool, name: e.target.value })
+              }
+              required
+            />
+            <Textarea
+              label="Description"
+              value={newTool.description}
+              onChange={(e) =>
+                setNewTool({ ...newTool, description: e.target.value })
+              }
+              required
+            />
+            <Input
+              label="URL"
+              value={newTool.url}
+              onChange={(e) =>
+                setNewTool({ ...newTool, url: e.target.value })
+              }
+              required
+            />
+            <Input
+              label="Icon (e.g., fas fa-chart-line)"
+              value={newTool.icon}
+              onChange={(e) =>
+                setNewTool({ ...newTool, icon: e.target.value })
+              }
+              required
+            />
+            <div className="flex justify-end gap-4">
+              <Button
+                type="button"
+                color="gray"
+                onClick={() =>
+                  setNewTool({ name: "", description: "", url: "", icon: "" })
+                }
+              >
+                Cancel
+              </Button>
+              <Button type="submit" color="green">
+                Add Tool
+              </Button>
             </div>
-          </div>
+          </form>
         </div>
 
-        {/* Edit Tool Modal */}
+        {/* Edit Tool Form */}
         {editTool && (
-          <div
-            className="modal fade"
-            id="editToolModal"
-            tabIndex="-1"
-            aria-hidden="true"
-          >
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <form onSubmit={handleEditTool}>
-                  <div className="modal-header">
-                    <Typography variant="h6">Edit Tool</Typography>
-                    <button
-                      type="button"
-                      className="btn-close"
-                      data-bs-dismiss="modal"
-                    ></button>
-                  </div>
-                  <div className="modal-body">
-                    <input
-                      type="text"
-                      className="form-control mb-3"
-                      value={editTool.name}
-                      onChange={(e) =>
-                        setEditTool({ ...editTool, name: e.target.value })
-                      }
-                      required
-                    />
-                    <textarea
-                      className="form-control mb-3"
-                      value={editTool.description}
-                      onChange={(e) =>
-                        setEditTool({
-                          ...editTool,
-                          description: e.target.value,
-                        })
-                      }
-                      required
-                    ></textarea>
-                    <input
-                      type="url"
-                      className="form-control mb-3"
-                      value={editTool.url}
-                      onChange={(e) =>
-                        setEditTool({ ...editTool, url: e.target.value })
-                      }
-                      required
-                    />
-                    <input
-                      type="text"
-                      className="form-control mb-3"
-                      value={editTool.icon}
-                      onChange={(e) =>
-                        setEditTool({ ...editTool, icon: e.target.value })
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="modal-footer">
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      data-bs-dismiss="modal"
-                    >
-                      Cancel
-                    </button>
-                    <button type="submit" className="btn btn-success">
-                      Save Changes
-                    </button>
-                  </div>
-                </form>
+          <div className="bg-white p-6 rounded-md shadow-md max-w-xl mx-auto space-y-4">
+            <Typography
+              variant="h5"
+              className="text-blue-gray-800 font-bold text-center"
+            >
+              Edit Tool
+            </Typography>
+            <form onSubmit={handleEditTool} className="space-y-4">
+              <Input
+                label="Tool Name"
+                value={editTool.name}
+                onChange={(e) =>
+                  setEditTool({ ...editTool, name: e.target.value })
+                }
+                required
+              />
+              <Textarea
+                label="Description"
+                value={editTool.description}
+                onChange={(e) =>
+                  setEditTool({ ...editTool, description: e.target.value })
+                }
+                required
+              />
+              <Input
+                label="URL"
+                value={editTool.url}
+                onChange={(e) =>
+                  setEditTool({ ...editTool, url: e.target.value })
+                }
+                required
+              />
+              <Input
+                label="Icon (e.g., fas fa-chart-line)"
+                value={editTool.icon}
+                onChange={(e) =>
+                  setEditTool({ ...editTool, icon: e.target.value })
+                }
+                required
+              />
+              <div className="flex justify-end gap-4">
+                <Button type="button" color="gray" onClick={() => setEditTool(null)}>
+                  Cancel
+                </Button>
+                <Button type="submit" color="green">
+                  Save Changes
+                </Button>
               </div>
-            </div>
+            </form>
           </div>
         )}
       </div>
