@@ -10,7 +10,11 @@ import {
   FiBarChart2,
   FiLayers,
   FiWifi,
+  FiHome,
+  FiSettings,
+  FiUsers,
 } from "react-icons/fi";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 export default function Dashboard({ auth }) {
   const [tools, setTools] = useState([
@@ -43,15 +47,34 @@ export default function Dashboard({ auth }) {
     name: "",
     description: "",
     url: "",
-    icon: "",
+    icon: "FiExternalLink",
   });
+
+  // Icon Map
+  const iconMap = {
+    FiBarChart2: <FiBarChart2 className="text-blue-500 text-6xl" />,
+    FiLayers: <FiLayers className="text-blue-500 text-6xl" />,
+    FiWifi: <FiWifi className="text-blue-500 text-6xl" />,
+    FiHome: <FiHome className="text-blue-500 text-6xl" />,
+    FiSettings: <FiSettings className="text-blue-500 text-6xl" />,
+    FiUsers: <FiUsers className="text-blue-500 text-6xl" />,
+  };
+
+  const getIcon = (iconName) => {
+    try {
+      return iconMap[iconName] || <FiExternalLink className="text-blue-500 text-6xl" />;
+    } catch (error) {
+      console.error(`Invalid icon "${iconName}":`, error);
+      return <FiExternalLink className="text-blue-500 text-6xl" />;
+    }
+  };
 
   // Add a new tool
   const handleAddTool = () => {
     const newId = tools.length ? tools[tools.length - 1].id + 1 : 1;
     const newToolEntry = { id: newId, ...newTool };
     setTools([...tools, newToolEntry]);
-    setNewTool({ name: "", description: "", url: "", icon: "" });
+    setNewTool({ name: "", description: "", url: "", icon: "FiExternalLink" });
     setShowAddModal(false);
   };
 
@@ -66,20 +89,15 @@ export default function Dashboard({ auth }) {
     setTools(tools.filter((tool) => tool.id !== id));
   };
 
-  // Map icon names to actual React Icons
-  const iconMap = {
-    FiBarChart2: <FiBarChart2 className="text-blue-500 text-6xl" />,
-    FiLayers: <FiLayers className="text-blue-500 text-6xl" />,
-    FiWifi: <FiWifi className="text-blue-500 text-6xl" />,
-  };
+  // Handle Drag and Drop
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
 
-  const getIcon = (iconName) => {
-    try {
-      return iconMap[iconName] || <FiExternalLink className="text-blue-500 text-6xl" />;
-    } catch (error) {
-      console.error(`Invalid icon "${iconName}":`, error);
-      return <FiExternalLink className="text-blue-500 text-6xl" />;
-    }
+    const reorderedTools = Array.from(tools);
+    const [movedTool] = reorderedTools.splice(result.source.index, 1);
+    reorderedTools.splice(result.destination.index, 0, movedTool);
+
+    setTools(reorderedTools);
   };
 
   return (
@@ -100,80 +118,66 @@ export default function Dashboard({ auth }) {
           </Button>
         </header>
 
-        {/* Tools Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {tools.map((tool) => (
-            <Card
-              key={tool.id}
-              className="relative drop-shadow-md hover:shadow-lg transition-shadow duration-300"
-            >
-              <div className="absolute top-2 right-2 flex gap-2">
-                <button
-                  className="text-yellow-500 hover:text-yellow-600"
-                  onClick={() => setEditTool(tool)}
-                  aria-label="Edit Tool"
-                >
-                  <FiEdit />
-                </button>
-                <button
-                  className="text-red-500 hover:text-red-600"
-                  onClick={() => handleDeleteTool(tool.id)}
-                  aria-label="Delete Tool"
-                >
-                  <FiTrash />
-                </button>
+        {/* Tools Grid with Drag and Drop */}
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="tools-grid" direction="horizontal">
+            {(provided) => (
+              <div
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+              >
+                {tools.map((tool, index) => (
+                  <Draggable key={tool.id} draggableId={tool.id.toString()} index={index}>
+                    {(provided) => (
+                      <Card
+                        className="relative drop-shadow-md hover:shadow-lg transition-shadow duration-300"
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                      >
+                        <div className="absolute top-2 right-2 flex gap-2">
+                          <button
+                            className="text-yellow-500 hover:text-yellow-600"
+                            onClick={() => setEditTool(tool)}
+                            aria-label="Edit Tool"
+                          >
+                            <FiEdit />
+                          </button>
+                          <button
+                            className="text-red-500 hover:text-red-600"
+                            onClick={() => handleDeleteTool(tool.id)}
+                            aria-label="Delete Tool"
+                          >
+                            <FiTrash />
+                          </button>
+                        </div>
+                        <CardBody className="text-center space-y-4">
+                          {getIcon(tool.icon)}
+                          <Typography variant="h6" className="text-gray-800 font-bold">
+                            {tool.name}
+                          </Typography>
+                          <Typography variant="small" className="text-gray-600">
+                            {tool.description}
+                          </Typography>
+                          <a
+                            href={tool.url}
+                            className="flex items-center justify-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Open Tool <FiExternalLink className="ml-2" />
+                          </a>
+                        </CardBody>
+                      </Card>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
               </div>
-              <CardBody className="text-center space-y-4">
-                {getIcon(tool.icon)}
-                {editTool?.id === tool.id ? (
-                  <div>
-                    <input
-                      className="border rounded-md w-full mb-2 p-2"
-                      value={editTool.name}
-                      onChange={(e) =>
-                        setEditTool({ ...editTool, name: e.target.value })
-                      }
-                    />
-                    <textarea
-                      className="border rounded-md w-full mb-2 p-2"
-                      value={editTool.description}
-                      onChange={(e) =>
-                        setEditTool({ ...editTool, description: e.target.value })
-                      }
-                    />
-                    <Button
-                      size="sm"
-                      color="green"
-                      onClick={() => handleEditTool(tool.id, editTool)}
-                    >
-                      Save
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    <Typography
-                      variant="h6"
-                      className="text-gray-800 font-bold"
-                    >
-                      {tool.name}
-                    </Typography>
-                    <Typography variant="small" className="text-gray-600">
-                      {tool.description}
-                    </Typography>
-                    <a
-                      href={tool.url}
-                      className="flex items-center justify-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Open Tool <FiExternalLink className="ml-2" />
-                    </a>
-                  </>
-                )}
-              </CardBody>
-            </Card>
-          ))}
-        </div>
+            )}
+          </Droppable>
+        </DragDropContext>
 
         {/* Add Tool Modal */}
         {showAddModal && (
@@ -197,9 +201,7 @@ export default function Dashboard({ auth }) {
                   placeholder="Tool Name"
                   className="border rounded-md w-full p-2"
                   value={newTool.name}
-                  onChange={(e) =>
-                    setNewTool({ ...newTool, name: e.target.value })
-                  }
+                  onChange={(e) => setNewTool({ ...newTool, name: e.target.value })}
                   required
                 />
                 <textarea
@@ -216,21 +218,22 @@ export default function Dashboard({ auth }) {
                   placeholder="URL"
                   className="border rounded-md w-full p-2"
                   value={newTool.url}
-                  onChange={(e) =>
-                    setNewTool({ ...newTool, url: e.target.value })
-                  }
+                  onChange={(e) => setNewTool({ ...newTool, url: e.target.value })}
                   required
                 />
-                <input
-                  type="text"
-                  placeholder="Icon (e.g., FiBarChart2)"
+                <select
                   className="border rounded-md w-full p-2"
                   value={newTool.icon}
-                  onChange={(e) =>
-                    setNewTool({ ...newTool, icon: e.target.value })
-                  }
+                  onChange={(e) => setNewTool({ ...newTool, icon: e.target.value })}
                   required
-                />
+                >
+                  <option value="FiBarChart2">Bar Chart</option>
+                  <option value="FiLayers">Layers</option>
+                  <option value="FiWifi">WiFi</option>
+                  <option value="FiHome">Home</option>
+                  <option value="FiSettings">Settings</option>
+                  <option value="FiUsers">Users</option>
+                </select>
                 <div className="flex justify-end gap-4">
                   <Button
                     type="button"
