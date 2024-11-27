@@ -9,6 +9,10 @@ import {
   Input,
   Textarea,
 } from "@material-tailwind/react";
+import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 export default function Dashboard({ auth }) {
   const [tools, setTools] = useState([
@@ -17,21 +21,21 @@ export default function Dashboard({ auth }) {
       name: "FWP Tracker",
       description: "Track and manage fixed wireless performance.",
       url: "https://fwpm.nwas.nbnco.net.au",
-      icon: "fas fa-chart-line",
+      icon: "bar_chart",
     },
     {
       id: 2,
       name: "WNTD Overlay Tool",
       description: "WNTD Reparenting and Load Balancing Tool.",
       url: "https://fwpm.nwas.nbnco.net.au/overlay/",
-      icon: "fas fa-layer-group",
+      icon: "layers",
     },
     {
       id: 3,
       name: "Signaling Trace",
       description: "Visualize LTE signaling traces.",
       url: "https://fwpm.nwas.nbnco.net.au/signaling/",
-      icon: "fas fa-network-wired",
+      icon: "network_check",
     },
   ]);
 
@@ -68,24 +72,47 @@ export default function Dashboard({ auth }) {
     <AuthenticatedLayout user={auth.user}>
       <Head title="Dashboard" />
       <div className="dashboard-page p-6 space-y-8">
-        {/* Page Title */}
-        <Typography
-          variant="h3"
-          color="blue-gray"
-          className="text-center font-bold"
-        >
-          FW Performance Tools Selector
-        </Typography>
+        {/* Header */}
+        <header className="flex justify-between items-center bg-blue-600 text-white p-4 rounded-lg shadow-md">
+          <Typography variant="h5" className="font-bold">
+            FW Performance Tools Selector
+          </Typography>
+          <Button
+            className="bg-white text-blue-600 hover:bg-blue-100 transition"
+            size="sm"
+            onClick={() => document.getElementById("add-tool-form").scrollIntoView()}
+          >
+            <AddIcon fontSize="small" className="mr-2" /> Add Tool
+          </Button>
+        </header>
 
         {/* Tools Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {tools.map((tool) => (
             <Card
               key={tool.id}
-              className="drop-shadow-md hover:shadow-lg transition-shadow duration-300"
+              className="relative drop-shadow-md hover:shadow-lg transition-shadow duration-300"
             >
+              <div className="absolute top-2 right-2 flex gap-2">
+                <button
+                  className="text-yellow-500 hover:text-yellow-600"
+                  onClick={() => setEditTool(tool)}
+                  aria-label="Edit Tool"
+                >
+                  <EditIcon />
+                </button>
+                <button
+                  className="text-red-500 hover:text-red-600"
+                  onClick={() => handleDeleteTool(tool.id)}
+                  aria-label="Delete Tool"
+                >
+                  <DeleteIcon />
+                </button>
+              </div>
               <CardBody className="text-center space-y-4">
-                <i className={`${tool.icon} fa-3x text-blue-500`}></i>
+                <span className="material-icons text-blue-500 text-6xl">
+                  {tool.icon}
+                </span>
                 <Typography variant="h6" className="text-gray-800 font-bold">
                   {tool.name}
                 </Typography>
@@ -94,35 +121,22 @@ export default function Dashboard({ auth }) {
                 </Typography>
                 <a
                   href={tool.url}
-                  className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors"
+                  className="flex items-center justify-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Open Tool
+                  Open Tool <OpenInNewIcon fontSize="small" className="ml-2" />
                 </a>
-                <div className="mt-4 flex justify-center gap-2">
-                  <Button
-                    size="sm"
-                    color="amber"
-                    onClick={() => setEditTool(tool)}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    size="sm"
-                    color="red"
-                    onClick={() => handleDeleteTool(tool.id)}
-                  >
-                    Delete
-                  </Button>
-                </div>
               </CardBody>
             </Card>
           ))}
         </div>
 
         {/* Add Tool Form */}
-        <div className="bg-white p-6 rounded-md shadow-md max-w-xl mx-auto space-y-4">
+        <div
+          id="add-tool-form"
+          className="bg-white p-6 rounded-lg shadow-lg max-w-xl mx-auto space-y-4"
+        >
           <Typography
             variant="h5"
             className="text-blue-gray-800 font-bold text-center"
@@ -155,7 +169,7 @@ export default function Dashboard({ auth }) {
               required
             />
             <Input
-              label="Icon (e.g., fas fa-chart-line)"
+              label="Icon (e.g., bar_chart, layers, network_check)"
               value={newTool.icon}
               onChange={(e) =>
                 setNewTool({ ...newTool, icon: e.target.value })
@@ -181,7 +195,7 @@ export default function Dashboard({ auth }) {
 
         {/* Edit Tool Form */}
         {editTool && (
-          <div className="bg-white p-6 rounded-md shadow-md max-w-xl mx-auto space-y-4">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-xl mx-auto space-y-4">
             <Typography
               variant="h5"
               className="text-blue-gray-800 font-bold text-center"
@@ -214,7 +228,7 @@ export default function Dashboard({ auth }) {
                 required
               />
               <Input
-                label="Icon (e.g., fas fa-chart-line)"
+                label="Icon (e.g., bar_chart, layers, network_check)"
                 value={editTool.icon}
                 onChange={(e) =>
                   setEditTool({ ...editTool, icon: e.target.value })
