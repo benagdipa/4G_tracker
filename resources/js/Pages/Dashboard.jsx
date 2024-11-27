@@ -25,8 +25,8 @@ export default function Dashboard({ auth }) {
       : [
           {
             id: 1,
-            name: "FWP Tracker",
-            description: "Track and manage FW performance.",
+            name: "FWP Opti Tracker",
+            description: "Track and manage FWP opti.",
             url: "https://fwpm.nwas.nbnco.net.au/dashboard/wireless-sites",
             icon: "FiBarChart2",
           },
