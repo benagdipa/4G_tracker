@@ -22,7 +22,7 @@ export default function Dashboard({ auth }) {
       id: 1,
       name: "FWP Tracker",
       description: "Track and manage fixed wireless performance.",
-      url: "https://fwpm.nwas.nbnco.net.au",
+      url: "https://fwpm.nwas.nbnco.net.au/dashboard/wireless-sites",
       icon: "FiBarChart2",
     },
     {
@@ -107,7 +107,7 @@ export default function Dashboard({ auth }) {
         {/* Header */}
         <header className="flex justify-between items-center bg-blue-600 text-white p-4 rounded-lg shadow-md">
           <Typography variant="h5" className="font-bold">
-            FW Performance Tools Selector
+            FWP Manager
           </Typography>
           <Button
             className="bg-white text-blue-600 hover:bg-blue-100 transition"
