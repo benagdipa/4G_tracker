@@ -1,243 +1,257 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, usePage } from '@inertiajs/react';
-import { Card, CardBody, Typography } from '@material-tailwind/react';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import React from 'react';
-import { Doughnut } from 'react-chartjs-2';
+import React, { useState } from "react";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { Head } from "@inertiajs/react";
+import { Card, CardBody, Typography, Button } from "@material-tailwind/react";
 
 export default function Dashboard({ auth }) {
-    const { count_data, version, site_status, site_solution_type, open_locs, closed_locs } = usePage().props
+  // Initial tools data
+  const [tools, setTools] = useState([
+    {
+      id: 1,
+      name: "FWP Tracker",
+      description: "Track and manage fixed wireless performance.",
+      url: "https://fwpm.nwas.nbnco.net.au",
+      icon: "fas fa-chart-line",
+    },
+    {
+      id: 2,
+      name: "WNTD Overlay Tool",
+      description: "WNTD Reparenting and Load Balancing Tool.",
+      url: "https://fwpm.nwas.nbnco.net.au/overlay/",
+      icon: "fas fa-layer-group",
+    },
+    {
+      id: 3,
+      name: "Signaling Trace",
+      description: "Visualize LTE signaling traces.",
+      url: "https://fwpm.nwas.nbnco.net.au/signaling/",
+      icon: "fas fa-network-wired",
+    },
+  ]);
 
-    const version_counts = version?.map(item => item.count);
-    const version_label = version?.map(item => item.version);
+  const [newTool, setNewTool] = useState({ name: "", description: "", url: "", icon: "" });
+  const [editTool, setEditTool] = useState(null);
 
-    const status_label = site_status?.map(item => item.label);
-    const status_count = site_status?.map(item => item.count);
+  // Add a new tool
+  const handleAddTool = (e) => {
+    e.preventDefault();
+    const newId = tools.length ? tools[tools.length - 1].id + 1 : 1;
+    const newToolEntry = { id: newId, ...newTool };
+    setTools([...tools, newToolEntry]);
+    setNewTool({ name: "", description: "", url: "", icon: "" });
+  };
 
-    const solution_label = site_solution_type?.map(item => item.label);
-    const solution_count = site_solution_type?.map(item => item.count);
+  // Edit an existing tool
+  const handleEditTool = (e) => {
+    e.preventDefault();
+    setTools(tools.map((tool) => (tool.id === editTool.id ? editTool : tool)));
+    setEditTool(null);
+  };
 
-    ChartJS.register(ArcElement, Tooltip, Legend);
-    const version_data = {
-        labels: version_label,
-        datasets: [
-            {
-                label: 'Count',
-                data: version_counts,
-                backgroundColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)',
-                ],
-                borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)',
-                ],
-                borderWidth: 1,
-            },
-        ],
-    };
+  // Delete a tool
+  const handleDeleteTool = (id) => {
+    setTools(tools.filter((tool) => tool.id !== id));
+  };
 
-    const status_data = {
-        labels: status_label,
-        datasets: [
-            {
-                label: 'Count',
-                data: status_count,
-                backgroundColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)',
-                ],
-                borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)',
-                ],
-                borderWidth: 1,
-            },
-        ],
-    }
-    const solution_data = {
-        labels: solution_label,
-        datasets: [
-            {
-                label: 'Count',
-                data: solution_count,
-                backgroundColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)',
-                ],
-                borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)',
-                ],
-                borderWidth: 1,
-            },
-        ],
-    }
-    const TABLE_HEAD = ['SN', 'LOCID', "WNTD", "AVC"]
-    return (
-        <AuthenticatedLayout user={auth.user}>
-            <Head title="Dashboard" />
-            <div className="dashboard-page p-6">
-                <Typography variant='h3' color='blue-gray'>Dashboard</Typography>
-                <div className="items-row grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 pt-12">
+  return (
+    <AuthenticatedLayout user={auth.user}>
+      <Head title="Dashboard" />
+      <div className="dashboard-page p-6">
+        <Typography variant="h3" color="blue-gray">
+          FW Performance Tools Selector
+        </Typography>
 
-                    <Card className='drop-shadow-sm shadow-lg border rounded-md'>
-                        <CardBody className='p-3'>
-                            <h4 className='text-gray-700 font-bold text-5xl leading-tight tracking-tighter font-inter'>{count_data?.loc_count ? count_data?.loc_count : '00'}</h4>
-                            <p className='font-semibold text-xl capitalize'>locations</p>
-                        </CardBody>
-                    </Card>
-
-                    <Card className='drop-shadow-sm shadow-lg border rounded-md'>
-                        <CardBody className='p-3'>
-                            <h4 className='text-gray-700 font-bold text-5xl leading-tight tracking-tighter font-inter'>{count_data?.wntd_count ? count_data?.wntd_count : '00'}</h4>
-                            <p className='font-semibold text-xl capitalize'>WNTD</p>
-                        </CardBody>
-                    </Card>
-
-                    <Card className='drop-shadow-sm shadow-lg border rounded-md '>
-                        <CardBody className='p-3'>
-                            <h4 className='text-gray-700 font-bold text-5xl leading-tight tracking-tighter font-inter'>{count_data?.avc_count ? count_data?.avc_count : '00'}</h4>
-                            <p className='font-semibold text-xl capitalize'>AVC</p>
-                        </CardBody>
-                    </Card>
-                    <Card className='drop-shadow-sm shadow-lg border rounded-md '>
-                        <CardBody className='p-3'>
-                            <h4 className='text-gray-700 font-bold text-5xl leading-tight tracking-tighter font-inter'>{count_data?.bw_profile_count ? count_data?.bw_profile_count : '00'}</h4>
-                            <p className='font-semibold text-xl capitalize'>BW Profile</p>
-                        </CardBody>
-                    </Card>
-                    <Card className='drop-shadow-sm shadow-lg border rounded-md'>
-                        <CardBody className='p-3'>
-                            <h4 className='text-gray-700 font-bold text-5xl leading-tight tracking-tighter font-inter'>{count_data?.site_count ? count_data?.site_count : '00'}</h4>
-                            <p className='font-semibold text-xl capitalize'>Sites</p>
-                        </CardBody>
-                    </Card>
-
-                    <Card className='drop-shadow-sm shadow-lg border rounded-md'>
-                        <CardBody className='p-3'>
-                            <h4 className='text-gray-700 font-bold text-5xl leading-tight tracking-tighter font-inter'>{count_data?.home_cell_count ? count_data?.home_cell_count : '00'}</h4>
-                            <p className='font-semibold text-xl capitalize'>Cells</p>
-                        </CardBody>
-                    </Card>
+        {/* Tools List */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+          {tools.map((tool) => (
+            <Card key={tool.id} className="drop-shadow-md">
+              <CardBody className="text-center">
+                <i className={`${tool.icon} fa-3x text-primary mb-4`}></i>
+                <Typography variant="h6" color="blue-gray">
+                  {tool.name}
+                </Typography>
+                <Typography variant="small" className="mb-4">
+                  {tool.description}
+                </Typography>
+                <a
+                  href={tool.url}
+                  className="btn btn-primary"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Open Tool
+                </a>
+                <div className="mt-4 flex justify-center gap-2">
+                  <Button
+                    size="sm"
+                    color="amber"
+                    onClick={() => setEditTool(tool)}
+                    data-bs-toggle="modal"
+                    data-bs-target="#editToolModal"
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    size="sm"
+                    color="red"
+                    onClick={() => handleDeleteTool(tool.id)}
+                  >
+                    Delete
+                  </Button>
                 </div>
-                <div className="items-row grid grid-col-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 pt-12">
-                    <div className="item">
-                        <Typography variant='h5' color='blue-gray' className='text-left mx-auto pb-8'>WNTD Version</Typography>
-                        <div className="h-full md:w-[500px] md:h-[500px] md:mx-auto lg:h-[500px] relative">
-                            <Doughnut options={{ responsive: true, plugins: { legend: { position: 'bottom', }, } }} data={version_data} />
-                        </div>
-                    </div>
-                    <div className="item">
-                        <Typography variant='h5' color='blue-gray' className='text-left mx-auto pb-8'>Solution Type</Typography>
-                        <div className="h-full md:w-[500px] md:h-[500px] md:mx-auto lg:h-[500px] relative">
-                            <Doughnut options={{ responsive: true, plugins: { legend: { position: 'bottom', }, } }} data={solution_data} />
-                        </div>
-                    </div>
-                    <div className="item">
-                        <Typography variant='h5' color='blue-gray' className='text-left mx-auto pb-8'>Tasks</Typography>
-                        <div className="h-full md:w-[500px] md:h-[500px] md:mx-auto lg:h-[500px] relative">
-                            <Doughnut options={{ responsive: true, plugins: { legend: { position: 'bottom', }, } }} data={status_data} />
-                        </div>
-                    </div>
+              </CardBody>
+            </Card>
+          ))}
+        </div>
+
+        {/* Add Tool Modal */}
+        <div className="modal fade" id="addToolModal" tabIndex="-1" aria-hidden="true">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <form onSubmit={handleAddTool}>
+                <div className="modal-header">
+                  <Typography variant="h6">Add a New Tool</Typography>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    data-bs-dismiss="modal"
+                  ></button>
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-24 clear-both">
-                    {open_locs?.length > 0 && (
-                        <div className='item'>
-                            <Typography variant='h5' color='blue-gray' className='pb-6'>Open LocId</Typography>
-                            <div className="overflow-scroll">
-                                <table className="w-full table-auto">
-                                    <thead>
-                                        <tr>
-                                            {TABLE_HEAD.map((head) => (
-                                                <React.Fragment key={head}>
-                                                    <th className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-2 border cursor-pointer">
-                                                        <Typography variant="small" className="leading-none text-gray-800 font-medium text-sm">{head}</Typography>
-                                                    </th>
-                                                </React.Fragment>))}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {open_locs?.map((site, index) => (
-                                            <tr key={site?.id} className="even:bg-blue-gray-50/50 border-b">
-                                                <td className="border-l h-10 text-[12px] font-medium ps-2">{index + 1}</td>
-                                                <td className="border-l h-10 text-[12px] font-medium ps-2">
-                                                    <Link href={route('wireless.show.location.index', site?.id)} className='font-semibold underline'>
-                                                        {site?.loc_id}
-                                                    </Link>
-                                                </td>
-                                                <td className="border-l h-10 text-[12px] font-medium ps-2">{site?.wntd}</td>
-                                                <td className="border-l border-r h-10 text-[12px] font-medium ps-2">{site?.avc}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    )}
-                    {
-                        closed_locs?.length > 0 && (
-                            <div className='item'>
-                                <Typography variant='h5' color='blue-gray' className='pb-6'>Closed LocId</Typography>
-                                <div className='overflow-scroll'>
-                                    <table className="w-full table-auto">
-                                        <thead>
-                                            <tr>
-                                                {TABLE_HEAD.map((head) => (
-                                                    <React.Fragment key={head}>
-                                                        <th className="border-y border-blue-gray-100 bg-blue-gray-50/50 p-2 border cursor-pointer">
-                                                            <Typography variant="small" className="leading-none text-gray-800 font-medium text-sm">{head}</Typography>
-                                                        </th>
-                                                    </React.Fragment>
-                                                ))}
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {closed_locs?.map((site, index) => (
-                                                <tr key={site.id} className="even:bg-blue-gray-50/50 border-b">
-                                                    <td className="border-l h-10 text-[12px] font-medium ps-2">{index + 1}</td>
-                                                    <td className="border-l h-10 text-[12px] font-medium ps-2">
-                                                        <Link href={route('wireless.show.location.index', site?.id)} className='font-semibold underline'>
-                                                            {site?.loc_id}
-                                                        </Link>
-                                                    </td>
-                                                    <td className="border-l h-10 text-[12px] font-medium ps-2">{site?.wntd}</td>
-                                                    <td className="border-l h-10 text-[12px] font-medium ps-2 border-r">{site?.avc}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        )
+                <div className="modal-body">
+                  <input
+                    type="text"
+                    className="form-control mb-3"
+                    placeholder="Tool Name"
+                    value={newTool.name}
+                    onChange={(e) =>
+                      setNewTool({ ...newTool, name: e.target.value })
                     }
-
+                    required
+                  />
+                  <textarea
+                    className="form-control mb-3"
+                    placeholder="Description"
+                    value={newTool.description}
+                    onChange={(e) =>
+                      setNewTool({ ...newTool, description: e.target.value })
+                    }
+                    required
+                  ></textarea>
+                  <input
+                    type="url"
+                    className="form-control mb-3"
+                    placeholder="URL"
+                    value={newTool.url}
+                    onChange={(e) =>
+                      setNewTool({ ...newTool, url: e.target.value })
+                    }
+                    required
+                  />
+                  <input
+                    type="text"
+                    className="form-control mb-3"
+                    placeholder="Icon (e.g., fas fa-chart-line)"
+                    value={newTool.icon}
+                    onChange={(e) =>
+                      setNewTool({ ...newTool, icon: e.target.value })
+                    }
+                    required
+                  />
                 </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-success">
+                    Add Tool
+                  </button>
+                </div>
+              </form>
             </div>
-        </AuthenticatedLayout>
-    );
+          </div>
+        </div>
+
+        {/* Edit Tool Modal */}
+        {editTool && (
+          <div
+            className="modal fade"
+            id="editToolModal"
+            tabIndex="-1"
+            aria-hidden="true"
+          >
+            <div className="modal-dialog">
+              <div className="modal-content">
+                <form onSubmit={handleEditTool}>
+                  <div className="modal-header">
+                    <Typography variant="h6">Edit Tool</Typography>
+                    <button
+                      type="button"
+                      className="btn-close"
+                      data-bs-dismiss="modal"
+                    ></button>
+                  </div>
+                  <div className="modal-body">
+                    <input
+                      type="text"
+                      className="form-control mb-3"
+                      value={editTool.name}
+                      onChange={(e) =>
+                        setEditTool({ ...editTool, name: e.target.value })
+                      }
+                      required
+                    />
+                    <textarea
+                      className="form-control mb-3"
+                      value={editTool.description}
+                      onChange={(e) =>
+                        setEditTool({
+                          ...editTool,
+                          description: e.target.value,
+                        })
+                      }
+                      required
+                    ></textarea>
+                    <input
+                      type="url"
+                      className="form-control mb-3"
+                      value={editTool.url}
+                      onChange={(e) =>
+                        setEditTool({ ...editTool, url: e.target.value })
+                      }
+                      required
+                    />
+                    <input
+                      type="text"
+                      className="form-control mb-3"
+                      value={editTool.icon}
+                      onChange={(e) =>
+                        setEditTool({ ...editTool, icon: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="modal-footer">
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      data-bs-dismiss="modal"
+                    >
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn btn-success">
+                      Save Changes
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </AuthenticatedLayout>
+  );
 }
