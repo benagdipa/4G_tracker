@@ -79,8 +79,8 @@ export default function Dashboard({ auth }) {
   };
 
   // Edit an existing tool
-  const handleEditTool = (id, updatedTool) => {
-    setTools(tools.map((tool) => (tool.id === id ? updatedTool : tool)));
+  const handleSaveEdit = () => {
+    setTools(tools.map((tool) => (tool.id === editTool.id ? editTool : tool)));
     setEditTool(null);
   };
 
@@ -154,20 +154,44 @@ export default function Dashboard({ auth }) {
                         </div>
                         <CardBody className="text-center space-y-4">
                           {getIcon(tool.icon)}
-                          <Typography variant="h6" className="text-gray-800 font-bold">
-                            {tool.name}
-                          </Typography>
-                          <Typography variant="small" className="text-gray-600">
-                            {tool.description}
-                          </Typography>
-                          <a
-                            href={tool.url}
-                            className="flex items-center justify-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Open Tool <FiExternalLink className="ml-2" />
-                          </a>
+                          {editTool?.id === tool.id ? (
+                            <div className="space-y-2">
+                              <input
+                                className="border rounded-md w-full p-2"
+                                value={editTool.name}
+                                onChange={(e) =>
+                                  setEditTool({ ...editTool, name: e.target.value })
+                                }
+                              />
+                              <textarea
+                                className="border rounded-md w-full p-2"
+                                value={editTool.description}
+                                onChange={(e) =>
+                                  setEditTool({ ...editTool, description: e.target.value })
+                                }
+                              />
+                              <Button size="sm" color="green" onClick={handleSaveEdit}>
+                                Save
+                              </Button>
+                            </div>
+                          ) : (
+                            <>
+                              <Typography variant="h6" className="text-gray-800 font-bold">
+                                {tool.name}
+                              </Typography>
+                              <Typography variant="small" className="text-gray-600">
+                                {tool.description}
+                              </Typography>
+                              <a
+                                href={tool.url}
+                                className="flex items-center justify-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                Open Tool <FiExternalLink className="ml-2" />
+                              </a>
+                            </>
+                          )}
                         </CardBody>
                       </Card>
                     )}
