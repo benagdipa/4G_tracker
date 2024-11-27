@@ -6,10 +6,16 @@ import {
   CardBody,
   Typography,
   Button,
-  Input,
-  Textarea,
 } from "@material-tailwind/react";
-import { FiPlus, FiEdit, FiTrash, FiExternalLink } from "react-icons/fi"; // React Icons
+import {
+  FiPlus,
+  FiEdit,
+  FiTrash,
+  FiExternalLink,
+  FiBarChart2,
+  FiLayers,
+  FiNetwork,
+} from "react-icons/fi";
 
 export default function Dashboard({ auth }) {
   const [tools, setTools] = useState([
@@ -17,8 +23,8 @@ export default function Dashboard({ auth }) {
       id: 1,
       name: "FWP Tracker",
       description: "Track and manage fixed wireless performance.",
-      url: "https://fwpm.nwas.nbnco.net.au",
-      icon: "FiBarChart",
+      url: "https://fwpm.nwas.nbnco.net.au/dashboard/wireless-sites",
+      icon: "FiBarChart2",
     },
     {
       id: 2,
@@ -36,27 +42,27 @@ export default function Dashboard({ auth }) {
     },
   ]);
 
+  const [editTool, setEditTool] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [newTool, setNewTool] = useState({
     name: "",
     description: "",
     url: "",
     icon: "",
   });
-  const [editTool, setEditTool] = useState(null);
 
   // Add a new tool
-  const handleAddTool = (e) => {
-    e.preventDefault();
+  const handleAddTool = () => {
     const newId = tools.length ? tools[tools.length - 1].id + 1 : 1;
     const newToolEntry = { id: newId, ...newTool };
     setTools([...tools, newToolEntry]);
     setNewTool({ name: "", description: "", url: "", icon: "" });
+    setShowAddModal(false);
   };
 
   // Edit an existing tool
-  const handleEditTool = (e) => {
-    e.preventDefault();
-    setTools(tools.map((tool) => (tool.id === editTool.id ? editTool : tool)));
+  const handleEditTool = (id, updatedTool) => {
+    setTools(tools.map((tool) => (tool.id === id ? updatedTool : tool)));
     setEditTool(null);
   };
 
@@ -65,19 +71,26 @@ export default function Dashboard({ auth }) {
     setTools(tools.filter((tool) => tool.id !== id));
   };
 
+  // Map icon names to actual React Icons
+  const iconMap = {
+    FiBarChart2: <FiBarChart2 className="text-blue-500 text-6xl" />,
+    FiLayers: <FiLayers className="text-blue-500 text-6xl" />,
+    FiNetwork: <FiNetwork className="text-blue-500 text-6xl" />,
+  };
+
   return (
     <AuthenticatedLayout user={auth.user}>
       <Head title="Dashboard" />
       <div className="dashboard-page p-6 space-y-8">
         {/* Header */}
-        <header className="flex justify-between items-center bg-blue-600 text-white p-4 rounded-lg shadow-md">
-          <Typography variant="h5" className="font-bold">
-            FW Performance Tools Selector
+        <header className="flex justify-between items-center bg-blue-600 text-white p-4 rounded-lg shadow-md transition-all duration-500 hover:shadow-xl hover:bg-blue-700">
+          <Typography variant="h5" className="font-bold animate-bounce">
+            FWP Tools Manager
           </Typography>
           <Button
             className="bg-white text-blue-600 hover:bg-blue-100 transition"
             size="sm"
-            onClick={() => document.getElementById("add-tool-form").scrollIntoView()}
+            onClick={() => setShowAddModal(true)}
           >
             <FiPlus className="mr-2" /> Add Tool
           </Button>
@@ -88,7 +101,7 @@ export default function Dashboard({ auth }) {
           {tools.map((tool) => (
             <Card
               key={tool.id}
-              className="relative drop-shadow-md hover:shadow-lg transition-shadow duration-300"
+              className="relative drop-shadow-md hover:shadow-lg transition-shadow duration-300 transform hover:scale-105"
             >
               <div className="absolute top-2 right-2 flex gap-2">
                 <button
@@ -107,78 +120,129 @@ export default function Dashboard({ auth }) {
                 </button>
               </div>
               <CardBody className="text-center space-y-4">
-                <FiExternalLink className="text-blue-500 text-6xl" />
-                <Typography variant="h6" className="text-gray-800 font-bold">
-                  {tool.name}
-                </Typography>
-                <Typography variant="small" className="text-gray-600">
-                  {tool.description}
-                </Typography>
-                <a
-                  href={tool.url}
-                  className="flex items-center justify-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Open Tool <FiExternalLink className="ml-2" />
-                </a>
+                <div className="animate-spin-slow">{iconMap[tool.icon]}</div>
+                {editTool?.id === tool.id ? (
+                  <div>
+                    <input
+                      className="border rounded-md w-full mb-2 p-2"
+                      value={editTool.name}
+                      onChange={(e) =>
+                        setEditTool({ ...editTool, name: e.target.value })
+                      }
+                    />
+                    <textarea
+                      className="border rounded-md w-full mb-2 p-2"
+                      value={editTool.description}
+                      onChange={(e) =>
+                        setEditTool({ ...editTool, description: e.target.value })
+                      }
+                    />
+                    <Button
+                      size="sm"
+                      color="green"
+                      onClick={() => handleEditTool(tool.id, editTool)}
+                    >
+                      Save
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <Typography
+                      variant="h6"
+                      className="text-gray-800 font-bold animate-pulse"
+                    >
+                      {tool.name}
+                    </Typography>
+                    <Typography variant="small" className="text-gray-600">
+                      {tool.description}
+                    </Typography>
+                    <a
+                      href={tool.url}
+                      className="flex items-center justify-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-transform transform hover:scale-110"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Open Tool <FiExternalLink className="ml-2" />
+                    </a>
+                  </>
+                )}
               </CardBody>
             </Card>
           ))}
         </div>
 
-        {/* Add Tool Form */}
-        <div
-          id="add-tool-form"
-          className="bg-white p-6 rounded-lg shadow-lg max-w-xl mx-auto space-y-4"
-        >
-          <Typography
-            variant="h5"
-            className="text-blue-gray-800 font-bold text-center"
-          >
-            Add a New Tool
-          </Typography>
-          <form onSubmit={handleAddTool} className="space-y-4">
-            <Input
-              label="Tool Name"
-              value={newTool.name}
-              onChange={(e) =>
-                setNewTool({ ...newTool, name: e.target.value })
-              }
-              required
-            />
-            <Textarea
-              label="Description"
-              value={newTool.description}
-              onChange={(e) =>
-                setNewTool({ ...newTool, description: e.target.value })
-              }
-              required
-            />
-            <Input
-              label="URL"
-              value={newTool.url}
-              onChange={(e) =>
-                setNewTool({ ...newTool, url: e.target.value })
-              }
-              required
-            />
-            <div className="flex justify-end gap-4">
-              <Button
-                type="button"
-                color="gray"
-                onClick={() =>
-                  setNewTool({ name: "", description: "", url: "", icon: "" })
-                }
+        {/* Add Tool Modal */}
+        {showAddModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 animate-fade-in">
+            <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full transition-transform transform scale-100 hover:scale-105">
+              <Typography
+                variant="h5"
+                className="text-blue-gray-800 font-bold text-center mb-4"
               >
-                Cancel
-              </Button>
-              <Button type="submit" color="green">
-                Add Tool
-              </Button>
+                Add a New Tool
+              </Typography>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleAddTool();
+                }}
+                className="space-y-4"
+              >
+                <input
+                  type="text"
+                  placeholder="Tool Name"
+                  className="border rounded-md w-full p-2"
+                  value={newTool.name}
+                  onChange={(e) =>
+                    setNewTool({ ...newTool, name: e.target.value })
+                  }
+                  required
+                />
+                <textarea
+                  placeholder="Description"
+                  className="border rounded-md w-full p-2"
+                  value={newTool.description}
+                  onChange={(e) =>
+                    setNewTool({ ...newTool, description: e.target.value })
+                  }
+                  required
+                />
+                <input
+                  type="url"
+                  placeholder="URL"
+                  className="border rounded-md w-full p-2"
+                  value={newTool.url}
+                  onChange={(e) =>
+                    setNewTool({ ...newTool, url: e.target.value })
+                  }
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Icon (e.g., FiBarChart2)"
+                  className="border rounded-md w-full p-2"
+                  value={newTool.icon}
+                  onChange={(e) =>
+                    setNewTool({ ...newTool, icon: e.target.value })
+                  }
+                  required
+                />
+                <div className="flex justify-end gap-4">
+                  <Button
+                    type="button"
+                    color="gray"
+                    onClick={() => setShowAddModal(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" color="green">
+                    Add Tool
+                  </Button>
+                </div>
+              </form>
             </div>
-          </form>
-        </div>
+          </div>
+        )}
       </div>
     </AuthenticatedLayout>
   );
