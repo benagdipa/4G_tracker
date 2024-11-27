@@ -1,12 +1,7 @@
 import React, { useState } from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
-import {
-  Card,
-  CardBody,
-  Typography,
-  Button,
-} from "@material-tailwind/react";
+import { Card, CardBody, Typography, Button } from "@material-tailwind/react";
 import {
   FiPlus,
   FiEdit,
@@ -14,7 +9,7 @@ import {
   FiExternalLink,
   FiBarChart2,
   FiLayers,
-  FiNetwork,
+  FiWifi,
 } from "react-icons/fi";
 
 export default function Dashboard({ auth }) {
@@ -23,7 +18,7 @@ export default function Dashboard({ auth }) {
       id: 1,
       name: "FWP Tracker",
       description: "Track and manage fixed wireless performance.",
-      url: "https://fwpm.nwas.nbnco.net.au/dashboard/wireless-sites",
+      url: "https://fwpm.nwas.nbnco.net.au",
       icon: "FiBarChart2",
     },
     {
@@ -38,7 +33,7 @@ export default function Dashboard({ auth }) {
       name: "Signaling Trace",
       description: "Visualize LTE signaling traces.",
       url: "https://fwpm.nwas.nbnco.net.au/signaling/",
-      icon: "FiNetwork",
+      icon: "FiWifi",
     },
   ]);
 
@@ -75,7 +70,16 @@ export default function Dashboard({ auth }) {
   const iconMap = {
     FiBarChart2: <FiBarChart2 className="text-blue-500 text-6xl" />,
     FiLayers: <FiLayers className="text-blue-500 text-6xl" />,
-    FiNetwork: <FiNetwork className="text-blue-500 text-6xl" />,
+    FiWifi: <FiWifi className="text-blue-500 text-6xl" />,
+  };
+
+  const getIcon = (iconName) => {
+    try {
+      return iconMap[iconName] || <FiExternalLink className="text-blue-500 text-6xl" />;
+    } catch (error) {
+      console.error(`Invalid icon "${iconName}":`, error);
+      return <FiExternalLink className="text-blue-500 text-6xl" />;
+    }
   };
 
   return (
@@ -83,9 +87,9 @@ export default function Dashboard({ auth }) {
       <Head title="Dashboard" />
       <div className="dashboard-page p-6 space-y-8">
         {/* Header */}
-        <header className="flex justify-between items-center bg-blue-600 text-white p-4 rounded-lg shadow-md transition-all duration-500 hover:shadow-xl hover:bg-blue-700">
-          <Typography variant="h5" className="font-bold animate-bounce">
-            FWP Tools Manager
+        <header className="flex justify-between items-center bg-blue-600 text-white p-4 rounded-lg shadow-md">
+          <Typography variant="h5" className="font-bold">
+            FW Performance Tools Selector
           </Typography>
           <Button
             className="bg-white text-blue-600 hover:bg-blue-100 transition"
@@ -101,7 +105,7 @@ export default function Dashboard({ auth }) {
           {tools.map((tool) => (
             <Card
               key={tool.id}
-              className="relative drop-shadow-md hover:shadow-lg transition-shadow duration-300 transform hover:scale-105"
+              className="relative drop-shadow-md hover:shadow-lg transition-shadow duration-300"
             >
               <div className="absolute top-2 right-2 flex gap-2">
                 <button
@@ -120,7 +124,7 @@ export default function Dashboard({ auth }) {
                 </button>
               </div>
               <CardBody className="text-center space-y-4">
-                <div className="animate-spin-slow">{iconMap[tool.icon]}</div>
+                {getIcon(tool.icon)}
                 {editTool?.id === tool.id ? (
                   <div>
                     <input
@@ -149,7 +153,7 @@ export default function Dashboard({ auth }) {
                   <>
                     <Typography
                       variant="h6"
-                      className="text-gray-800 font-bold animate-pulse"
+                      className="text-gray-800 font-bold"
                     >
                       {tool.name}
                     </Typography>
@@ -158,7 +162,7 @@ export default function Dashboard({ auth }) {
                     </Typography>
                     <a
                       href={tool.url}
-                      className="flex items-center justify-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-transform transform hover:scale-110"
+                      className="flex items-center justify-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -173,8 +177,8 @@ export default function Dashboard({ auth }) {
 
         {/* Add Tool Modal */}
         {showAddModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 animate-fade-in">
-            <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full transition-transform transform scale-100 hover:scale-105">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full">
               <Typography
                 variant="h5"
                 className="text-blue-gray-800 font-bold text-center mb-4"
