@@ -44,7 +44,29 @@ export default function Dashboard({ auth }) {
             url: "https://fwpm.nwas.nbnco.net.au/signaling/",
             icon: "FiWifi",
           },
+          {
+            id: 4,
+            name: "HST User Performance",
+            description: "HST Performance Summary Dashboard.",
+            url: "https://fwpm.nwas.nbnco.net.au/hst-performance/",
+            icon: "FiUsers",
+          },
+          {
+            id: 5,
+            name: "WNTD Time Series",
+            description: "WNTD Radio and Speed Performance.",
+            url: "https://fwpm.nwas.nbnco.net.au/wntd-time-series/",
+            icon: "FiHome",
+          },
+          {
+            id: 6,
+            name: "RAN KPI",
+            description: "Performance KPI Dashboard.",
+            url: "https://fwpm.nwas.nbnco.net.au/ran-kpi/",
+            icon: "FiSettings",
+          },
         ];
+
   });
 
   // Save tools to local storage whenever the tools state changes
