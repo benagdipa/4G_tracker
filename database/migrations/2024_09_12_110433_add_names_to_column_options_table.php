@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('column_options', function (Blueprint $table) {
-            $table->string('names')->nullable();  // Add the 'names' column, nullable to avoid immediate errors
-        });
+       Schema::table('column_options', function (Blueprint $table) {
+        if (!Schema::hasColumn('column_options', 'names')) {
+            $table->string('names')->nullable();
+        }
+		});
     }
     
     public function down()

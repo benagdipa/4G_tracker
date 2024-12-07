@@ -331,6 +331,10 @@ export default function Index({
     
       get_table_header(additional_columns);
     }
+	else
+	{
+		get_table_header([]);
+	}
   }, [additional_columns]);
   useEffect(() => {
     if (changedItems.length > 0) {
