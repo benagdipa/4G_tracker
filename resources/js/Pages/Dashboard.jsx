@@ -59,9 +59,9 @@ export default function Dashboard({ auth }) {
             },
             {
               id: 4,
-              name: "HST User Performance",
-              description: "HST Performance Summary Dashboard.",
-              url: "https://biatableau.nbnco.net.au/#/views/FWSUP-50MOptimization/HSTSubscribers",
+              name: "ENM Script Generator",
+              description: "ENM Implementation Script Generator",
+              url: "https://fwpm.nwas.nbnco.net.au/enm/",
               icon: "FiUsers",
             },
             {
