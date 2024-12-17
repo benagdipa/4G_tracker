@@ -30,71 +30,16 @@ const isLocalStorageAvailable = () => {
 };
 
 const defaultTools = [
-  {
-    id: 1,
-    name: "FWP Tracker",
-    description: "Track and manage FWP performance.",
-    url: "https://fwpm.nwas.nbnco.net.au/dashboard/wireless-sites",
-    icon: "FiBarChart2",
-  },
-  {
-    id: 2,
-    name: "WNTD Overlay Tool",
-    description: "WNTD Reparenting and Load Balancing Tool.",
-    url: "https://fwpm.nwas.nbnco.net.au/overlay/",
-    icon: "FiLayers",
-  },
-  {
-    id: 3,
-    name: "UE Signaling Trace",
-    description: "Visualize LTE signaling traces.",
-    url: "https://fwpm.nwas.nbnco.net.au/signaling/",
-    icon: "FiWifi",
-  },
-  {
-    id: 4,
-    name: "ENM Script Generator",
-    description: "Generate ENM implementation scripts.",
-    url: "https://fwpm.nwas.nbnco.net.au/enm/",
-    icon: "FiUsers",
-  },
-  {
-    id: 5,
-    name: "Planet MASE Processor",
-    description: "Generate and process Planet projects.",
-    url: "https://fwpm.nwas.nbnco.net.au/mase/",
-    icon: "FiHome",
-  },
-  {
-    id: 6,
-    name: "RAN License Tool",
-    description: "Generate RAN license implementation tools.",
-    url: "https://fwpm.nwas.nbnco.net.au/license/",
-    icon: "FiSettings",
-  },
-  {
-    id: 7,
-    name: "RAN KPI Dashboard",
-    description: "LTE and NR KPI performance insights.",
-    url: "https://biatableau.nbnco.net.au/#/views/FWKPIPerformance/kpi_lte",
-    icon: "FiUsers",
-  },
-  {
-    id: 8,
-    name: "WNTD Time-Series",
-    description: "View WNTD radio and speed performance stats.",
-    url: "https://biatableau.nbnco.net.au/#/views/WNTDTime-SeriesStats/TR135ts",
-    icon: "FiHome",
-  },
-  {
-    id: 9,
-    name: "HST Subscribers",
-    description: "View HST subscribers summary and optimization.",
-    url: "https://biatableau.nbnco.net.au/#/views/FWSUP-50MOptimization/HSTSubscribers",
-    icon: "FiSettings",
-  },
+  { id: 1, name: "FWP Tracker", description: "Track and manage FWP performance.", url: "https://fwpm.nwas.nbnco.net.au/dashboard/wireless-sites", icon: "FiBarChart2" },
+  { id: 2, name: "WNTD Overlay Tool", description: "WNTD Reparenting and Load Balancing Tool.", url: "https://fwpm.nwas.nbnco.net.au/overlay/", icon: "FiLayers" },
+  { id: 3, name: "UE Signaling Trace", description: "Visualize LTE signaling traces.", url: "https://fwpm.nwas.nbnco.net.au/signaling/", icon: "FiWifi" },
+  { id: 4, name: "ENM Script Generator", description: "Generate ENM implementation scripts.", url: "https://fwpm.nwas.nbnco.net.au/enm/", icon: "FiUsers" },
+  { id: 5, name: "Planet MASE Processor", description: "Generate and process Planet projects.", url: "https://fwpm.nwas.nbnco.net.au/mase/", icon: "FiHome" },
+  { id: 6, name: "RAN License Tool", description: "Generate RAN license implementation tools.", url: "https://fwpm.nwas.nbnco.net.au/license/", icon: "FiSettings" },
+  { id: 7, name: "RAN KPI Dashboard", description: "LTE and NR KPI performance insights.", url: "https://biatableau.nbnco.net.au/#/views/FWKPIPerformance/kpi_lte", icon: "FiBarChart2" },
+  { id: 8, name: "WNTD Time-Series", description: "View WNTD radio and speed performance stats.", url: "https://biatableau.nbnco.net.au/#/views/WNTDTime-SeriesStats/TR135ts", icon: "FiWifi" },
+  { id: 9, name: "HST Subscribers", description: "View HST subscribers summary and optimization.", url: "https://biatableau.nbnco.net.au/#/views/FWSUP-50MOptimization/HSTSubscribers", icon: "FiLayers" },
 ];
-
 
 export default function Dashboard({ auth }) {
   const [tools, setTools] = useState(() => {
@@ -108,12 +53,7 @@ export default function Dashboard({ auth }) {
 
   const [editTool, setEditTool] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newTool, setNewTool] = useState({
-    name: "",
-    description: "",
-    url: "",
-    icon: "FiExternalLink",
-  });
+  const [newTool, setNewTool] = useState({ name: "", description: "", url: "", icon: "FiExternalLink" });
 
   useEffect(() => {
     if (isLocalStorageAvailable()) {
@@ -124,6 +64,11 @@ export default function Dashboard({ auth }) {
   const handleAddTool = () => {
     if (!/^https?:\/\//.test(newTool.url)) {
       alert("Please enter a valid URL starting with http:// or https://");
+      return;
+    }
+    const isDuplicate = tools.some((tool) => tool.name === newTool.name || tool.url === newTool.url);
+    if (isDuplicate) {
+      alert("A tool with the same name or URL already exists.");
       return;
     }
     const newId = tools.length ? tools[tools.length - 1].id + 1 : 1;
@@ -178,27 +123,32 @@ export default function Dashboard({ auth }) {
                 {tools.map((tool, index) => (
                   <Draggable key={tool.id} draggableId={tool.id.toString()} index={index}>
                     {(provided) => (
-                      <Card ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} className="p-4 relative shadow-md hover:shadow-lg">
+                      <Card
+                        className="p-4 relative shadow-md hover:shadow-lg transition-shadow duration-300 bg-blue-gray-50 border border-gray-200 rounded-lg"
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                      >
                         <div className="absolute top-2 right-2 flex gap-2">
-                          <button aria-label="Edit Tool" onClick={() => setEditTool(tool)}><FiEdit className="text-yellow-500" /></button>
-                          <button aria-label="Delete Tool" onClick={() => handleDeleteTool(tool.id)}><FiTrash className="text-red-500" /></button>
+                          <button aria-label="Edit Tool" onClick={() => setEditTool(tool)}>
+                            <FiEdit className="text-yellow-500 hover:text-yellow-600" />
+                          </button>
+                          <button aria-label="Delete Tool" onClick={() => handleDeleteTool(tool.id)}>
+                            <FiTrash className="text-red-500 hover:text-red-600" />
+                          </button>
                         </div>
                         <CardBody className="text-center space-y-4">
                           {getIcon(tool.icon)}
-                          {editTool?.id === tool.id ? (
-                            <>
-                              <input value={editTool.name} onChange={(e) => setEditTool({ ...editTool, name: e.target.value })} className="border rounded-md p-2 w-full" />
-                              <Button size="sm" color="green" onClick={handleSaveEdit}>Save</Button>
-                            </>
-                          ) : (
-                            <>
-                              <Typography variant="h6">{tool.name}</Typography>
-                              <Typography variant="small" className="text-gray-600">{tool.description}</Typography>
-                              <a href={tool.url} className="inline-flex items-center text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">
-                                Open Tool <FiExternalLink className="ml-2" />
-                              </a>
-                            </>
-                          )}
+                          <Typography variant="h6" className="text-gray-800 font-bold">{tool.name}</Typography>
+                          <Typography variant="small" className="text-gray-600">{tool.description}</Typography>
+                          <a
+                            href={tool.url}
+                            className="inline-flex items-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Open Tool <FiExternalLink className="ml-2" />
+                          </a>
                         </CardBody>
                       </Card>
                     )}
@@ -215,7 +165,7 @@ export default function Dashboard({ auth }) {
 
         {/* Add Modal */}
         {showAddModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center modal-animate">
             <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
               <Typography variant="h5" className="font-bold mb-4 text-center">Add a New Tool</Typography>
               <form onSubmit={(e) => { e.preventDefault(); handleAddTool(); }} className="space-y-4">
@@ -231,6 +181,7 @@ export default function Dashboard({ auth }) {
     </AuthenticatedLayout>
   );
 }
+
 
 
 // import React, { useState, useEffect } from "react";
