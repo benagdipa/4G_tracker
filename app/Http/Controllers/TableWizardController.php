@@ -99,7 +99,7 @@ class TableWizardController extends Controller
     public function import_from_csv(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'import_file' => 'required|file|mimes:csv',
+            'import_file' => 'required|file|mimes:csv,txt',
         ]);
         if ($validator->fails()) {
             return response()->json(['error' => array('message' => $validator->errors()->first())], 500);
