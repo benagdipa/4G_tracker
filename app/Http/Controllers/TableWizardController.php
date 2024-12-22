@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Rules\LowercaseWithUnderscore;
 use Illuminate\Support\Facades\Validator;
 use League\Csv\Reader;
+use Illuminate\Support\Facades\DB;
+
 
 class TableWizardController extends Controller
 {
@@ -233,35 +235,72 @@ class TableWizardController extends Controller
     }
 
     public function save_row(Request $request, $id)
-    {
+	{
+		try {
         $item = Value::findOrFail($id);
+
         if ($item) {
-            $item->values = json_encode($request->changedItems);
-            $item->update();
+            $values = $request->changedItems;
+            if (is_array($values)) {
+                $item->values = json_encode($values); 
+                $item->updated_at = now();
+                $item->save();
+
+                // Return a response indicating success
+                return response()->json([
+                    'success' => true,
+                    'savedData' => $item // You can return the saved data
+                ]);
+            } else {
+                return response()->json(['success' => false, 'error' => 'Invalid data format']);
+            }
         }
-    }
+			
+			return response()->json(['success' => false, 'error' => 'Item not found']);
+		} catch (\Exception $e) {
+			return response()->json(['success' => false, 'error' => $e->getMessage()]);
+		}
+
+	}
 
     public function add_row(Request $request)
-    {
-        if (isset($request->entity_id)) {
-            $toInsert = [];
-            if (isset($request->newItem)) {
-                foreach ($request->newItem as $key => $value) {
-                    $toInsert[] = [$key => $value];
-                }
-            }
-            $item = Value::create([
-                'entity_id' => $request->entity_id,
-                'values' => json_encode($toInsert),
-            ]);
+{
+    // Ensure the required fields are present
+    if ($request->has('entity_id') && $request->has('newItem')) {
+        $entity_id = $request->input('entity_id');
+        $newItem = $request->input('newItem');  // This will be the flat array
+
+        // Prepare the data for insertion (each item should be a key-value pair)
+        $toInsert = [];
+        foreach ($newItem as $item) {
+            // Merge the item with the entity_id (which won't be included in each individual object)
+            $toInsert[] = $item;
         }
+
+        // Insert into the database (without the 'id' field, as it's auto-incremented)
+        $item = Value::create([
+            'entity_id' => $entity_id,  // The entity ID
+            'values' => json_encode($toInsert),  // Insert the values as JSON
+        ]);
+
+        // Return the newly inserted row including the auto-generated 'id'
+        return response()->json([
+            'success' => true,
+            'newRow' => $item,  // This includes the auto-generated 'id'
+        ]);
     }
+
+    return response()->json(['success' => false, 'message' => 'Invalid data.']);
+}
+
 
 
     public function delete_row($id)
     {
         $value = Value::findOrFail($id);
         $value->delete();
+		// Return a success response
+        return response()->json(['success' => true]);
     }
 
     public function rearrange_column(Request $request)
