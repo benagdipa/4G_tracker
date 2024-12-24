@@ -67,7 +67,10 @@ export default function CSVMapping({ mappingDialog, setMappingDialog, columns, m
         <React.Fragment>
             <Dialog open={mappingDialog} size='xs'>
                 <DialogHeader>CSV Mapping</DialogHeader>
-                <DialogBody className='px-6 overflow-scroll'>
+                <DialogBody className='px-6 overflow-scroll' style={{
+				maxHeight: '400px', // Adjust the maxHeight to suit your needs
+				overflowY: 'auto',  // Enable vertical scroll if content exceeds maxHeight
+				}}>
                     {columns?.length > 0 && columns?.map((item, index) => {
                         return (
                             <div className="form-item mb-4" key={index}>

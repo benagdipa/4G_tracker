@@ -17,6 +17,7 @@ use League\Csv\Reader;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Artisan;
 
 class LocationController extends Controller
 {
@@ -142,7 +143,7 @@ class LocationController extends Controller
     public function import_from_csv(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'import_file' => 'required|file|mimes:csv',
+            'import_file' => 'required|file|mimes:csv,txt',
         ]);
         if ($validator->fails()) {
             return response()->json(['error' => array('message' => $validator->errors()->first())], 500);
@@ -192,9 +193,11 @@ class LocationController extends Controller
             foreach ($dataCsv as $data) {
                 $information[$index][] = $data;
             }
-            $batch->add(new ProcessCsvImport($input, $information[$index]));
+           $batch->add(new ProcessCsvImport($input, $information[$index]));
         }
         session()->put('batch_site_id', $batch->id);
+		// Manually trigger the queue:work command
+		Artisan::call('queue:work', ['--once' => true]);
         return response()->json([
             'success' => ['message' => 'Sites imported successfully.'],
             'batch_id' => $batch->id,

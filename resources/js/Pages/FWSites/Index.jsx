@@ -504,7 +504,7 @@ export default function Index({
             <div className="flex filter-details justify-end gap-1">
               {role === "super-admin" && (
                 <>
-                  {/* <div className="import-type-field">
+                  { <div className="import-type-field">
                     <Button
                       variant="gradient"
                       className="capitalize"
@@ -519,7 +519,7 @@ export default function Index({
                       ref={hiddenFileInput}
                       style={{ display: "none" }}
                     />
-                  </div> */}
+                  </div> }
                 </>
               )}
               <ExportButton

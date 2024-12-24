@@ -83,7 +83,10 @@ export default function CSVMapping({ mappingDialog, setMappingDialog, mappingDat
                 </DialogHeader>
                 {errorMsg && <p className='text-red-500 font-medium text-[12px] px-4'>{errorMsg}</p>}
                 {successMsg && <p className='text-green-500 font-medium text-[12px] px-4'>{successMsg}</p>}
-                <DialogBody className='px-6 overflow-scroll'>
+                <DialogBody className='px-6 overflow-scroll' style={{
+				maxHeight: '400px', // Adjust the maxHeight to suit your needs
+				overflowY: 'auto',  // Enable vertical scroll if content exceeds maxHeight
+				}}>
                     <div className="form-item mb-4">
                         <div className="flex items-center">
                             <InputLabel value={'Site Name'} className='w-1/3' />

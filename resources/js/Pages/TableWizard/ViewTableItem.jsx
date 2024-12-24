@@ -21,7 +21,8 @@ export default function ViewTableItem({ auth, entity }) {
     const [addNewRow, setAddNewRow] = useState(false);
     const [rowData, setRowData] = useState([]);
     const [newRowData, setNewRowData] = useState({});
-
+	const [totalRows, setTotalRows] = useState(0); // Added state for total rows
+	
     const handlePerPageChange = (val) => {
         setPerPage(val);
     };
@@ -103,6 +104,11 @@ export default function ViewTableItem({ auth, entity }) {
             return formattedRow;
         }) || [];
         setRowData(data);
+
+        // Set total rows using entity?.values?.data?.length
+        const totalRowsCount = entity?.values?.data?.length || 0;
+        setTotalRows(totalRowsCount);
+       // alert(`Total number of rows: ${totalRowsCount}`); // Alert total rows
     }, [entity?.values?.data, entity?.attributes]);
 
     const handleDeleteRow = (id) => {
@@ -112,9 +118,7 @@ export default function ViewTableItem({ auth, entity }) {
                 .delete(route('table.delete.row', { id }))
                 .then((response) => {
                     if (response.data.success) {
-                        const updatedRowData = rowData.filter((row) => row.id !== id);
-                        setRowData(updatedRowData);  // Update state with filtered rows
-                        alert(`Row with ID ${id} has been deleted.`);
+                        window.location.reload();  // Reload the page after successful deletion
                     } else {
                         alert('Error deleting row. Please try again.');
                     }
@@ -143,11 +147,7 @@ export default function ViewTableItem({ auth, entity }) {
             .post(route('table.save.row', { id }), { changedItems: transformedData, id })
             .then((response) => {
                 if (response.data.success) {
-                    const updatedRowData = rowData.map((row) =>
-                        row.id === id ? { ...row, ...response.data.savedData } : row
-                    );
-                    setRowData(updatedRowData);  // Update state with modified row data
-                    alert("Row saved successfully.");
+                    window.location.reload();  // Reload the page after successful save
                 } else {
                     alert(`Error saving row: ${response.data.error || 'Unknown error'}`);
                 }
@@ -174,14 +174,8 @@ export default function ViewTableItem({ auth, entity }) {
             .post(route('table.add.row'), dataToSend)
             .then((response) => {
                 if (response.data.success) {
-                    const newRow = response.data.newRow;
-
-                    setRowData((prevRowData) => {
-                        const updatedRowData = [...prevRowData, newRow];
-                        return updatedRowData;  // Add new row to state
-                    });
-
-                    setAddNewRow(false);  // Close dialog after successful add
+					setAddNewRow(false);  // Close the dialog after successful addition
+                    window.location.reload();  // Reload the page after adding new row
                 } else {
                     alert('Error adding row.');
                 }
@@ -248,35 +242,39 @@ export default function ViewTableItem({ auth, entity }) {
             </div>
 
             <Dialog open={addNewRow} handler={() => setAddNewRow(false)}>
-                <DialogHeader>Add New Row</DialogHeader>
-                <DialogBody divider>
-                    {entity?.attributes?.length === 0 ? (
-                        <Typography>No columns available to add data</Typography>
-                    ) : (
-                        entity?.attributes?.map((attr, index) => (
-                            <div key={index} className="mb-4">
-                                <TextInput
-                                    label={attr?.name || attr?.alternative_name || `Column ${index + 1}`}
-                                    onChange={(e) =>
-                                        setNewRowData((prev) => ({
-                                            ...prev,
-                                            [attr.slug]: e.target.value,
-                                        }))
-                                    }
-                                />
-                            </div>
-                        ))
-                    )}
-                </DialogBody>
-                <DialogFooter>
-                    <Button variant="text" color="red" onClick={() => setAddNewRow(false)} className="mr-1">
-                        Close
-                    </Button>
-                    <Button variant="gradient" color="green" onClick={handleAddNewRow}>
-                        Add Row
-                    </Button>
-                </DialogFooter>
-            </Dialog>
+			  <DialogHeader>Add New Row</DialogHeader>
+			  <DialogBody divider style={{ maxHeight: '400px', overflowY: 'auto' }}>
+				{entity?.attributes?.length === 0 ? (
+				  <Typography>No columns available to add data</Typography>
+				) : (
+				  entity?.attributes?.map((attr, index) => (
+					<div key={index} className="mb-4">
+					  <Typography variant="small" className="text-gray-800">
+						{attr?.name || attr?.alternative_name || `Column ${index + 1}`}
+					  </Typography>
+					  <TextInput
+						label={attr?.name || attr?.alternative_name || `Column ${index + 1}`}
+						onChange={(e) =>
+						  setNewRowData((prev) => ({
+							...prev,
+							[attr.slug]: e.target.value,
+						  }))
+						}
+					  />
+					</div>
+				  ))
+				)}
+			  </DialogBody>
+			  <DialogFooter>
+				<Button variant="text" color="red" onClick={() => setAddNewRow(false)} className="mr-1">
+				  Close
+				</Button>
+				<Button variant="gradient" color="green" onClick={handleAddNewRow}>
+				  Add Row
+				</Button>
+			  </DialogFooter>
+			</Dialog>
+
 
             {entity?.attributes.length === 0 && (
                 <div className="text-center border rounded py-6">
@@ -324,7 +322,7 @@ export default function ViewTableItem({ auth, entity }) {
                                     gridOptions={gridOptions}
                                     domLayout="autoHeight"
                                     paginationPageSize={perPage}
-                                    pagination={true}
+                                    pagination={false}
                                     onGridReady={(params) => params.api.sizeColumnsToFit()}
                                 />
                             </div>
@@ -360,8 +358,9 @@ export default function ViewTableItem({ auth, entity }) {
                                         </select>
                                     </div>
                                     <div className="text-sm font-medium">
-                                        <Pagination />
+                                        {`${entity?.values?.from}-${entity?.values?.to} of ${entity?.values?.total} Records`}
                                     </div>
+                                    <Pagination links={entity?.values?.links} perPage={perPage} />
                                 </div>
                             </div>
                         </Card>

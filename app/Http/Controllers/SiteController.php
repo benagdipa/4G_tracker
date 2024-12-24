@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 use League\Csv\Reader;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Support\Facades\Artisan;
 
 class SiteController extends Controller
 {
@@ -124,7 +125,7 @@ class SiteController extends Controller
     public function import_from_csv(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'import_file' => 'required|file|mimes:csv',
+            'import_file' => 'required|file|mimes:csv,txt',
         ]);
         if ($validator->fails()) {
             return response()->json(['error' => array('message' => $validator->errors()->first())], 500);
@@ -178,6 +179,7 @@ class SiteController extends Controller
             $batch->add(new ProcessSiteFieldImport($input, $information[$index]));
         }
         session()->put('batch_field_id', $batch->id);
+		Artisan::call('queue:work', ['--once' => true]);
         return response()->json([
             'success' => ['message' => 'Sites imported successfully.'],
             'batch_id' => $batch->id,
