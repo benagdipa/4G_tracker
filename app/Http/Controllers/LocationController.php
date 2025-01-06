@@ -18,6 +18,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
+
 
 class LocationController extends Controller
 {
@@ -197,7 +199,14 @@ class LocationController extends Controller
         }
         session()->put('batch_site_id', $batch->id);
 		// Manually trigger the queue:work command
-		Artisan::call('queue:work', ['--once' => true]);
+		try {
+			Artisan::call('queue:work', ['--once' => true]);
+			Log::info('Queue work command executed successfully');
+		} 
+		catch (\Exception $e) {
+			Log::error('Error running queue work command: ' . $e->getMessage());
+		}
+
         return response()->json([
             'success' => ['message' => 'Sites imported successfully.'],
             'batch_id' => $batch->id,

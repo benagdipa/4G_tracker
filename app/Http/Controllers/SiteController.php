@@ -16,6 +16,8 @@ use Inertia\Inertia;
 use League\Csv\Reader;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
+
 
 class SiteController extends Controller
 {
@@ -179,7 +181,13 @@ class SiteController extends Controller
             $batch->add(new ProcessSiteFieldImport($input, $information[$index]));
         }
         session()->put('batch_field_id', $batch->id);
-		Artisan::call('queue:work', ['--once' => true]);
+		try {
+			Artisan::call('queue:work', ['--once' => true]);
+			Log::info('Queue work command executed successfully');
+		} 
+		catch (\Exception $e) {
+			Log::error('Error running queue work command: ' . $e->getMessage());
+		}
         return response()->json([
             'success' => ['message' => 'Sites imported successfully.'],
             'batch_id' => $batch->id,
