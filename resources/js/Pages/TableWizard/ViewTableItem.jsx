@@ -353,8 +353,7 @@ export default function ViewTableItem({ auth, entity }) {
                                             <option value="15">15</option>
                                             <option value="20">20</option>
                                             <option value="25">25</option>
-                                            <option value="50">50</option>
-                                            <option value="all">All</option>
+                                            <option value="50">50</option>                                   
                                         </select>
                                     </div>
                                     <div className="text-sm font-medium">
