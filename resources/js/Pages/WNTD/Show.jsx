@@ -169,11 +169,11 @@ export default function Show({ auth, site, trackings }) {
                                     </TimelineHeader>
                                     <TimelineBody className="pb-8">
                                         {tracking?.key === 'artifacts' ? (
-                                            <Typography variant="small" color="gray" className="font-normal text-gray-600"><span className='font-semibold'>{tracking?.user.name}</span> Uploaded New  <span className='capitalize font-semibold'>{tracking.key ? tracking.key.replace(/_/g, ' ') : ''}</span>
+                                            <Typography variant="small" color="gray" className="font-normal text-gray-600"><span className='font-semibold'>{tracking?.user?.name || 'Unknown User'}</span> Uploaded New  <span className='capitalize font-semibold'>{tracking.key ? tracking.key.replace(/_/g, ' ') : ''}</span>
                                                 {tracking?.value && <ShowFileIcons files={tracking?.value} />}
                                             </Typography>
                                         ) :
-                                            <Typography variant="small" color="gray" className="font-normal text-gray-600"><span className='font-semibold'>{tracking?.user.name}</span> changed value of <span className='capitalize font-semibold'>{tracking.key ? tracking.key.replace(/_/g, ' ') : ''}</span> to
+                                            <Typography variant="small" color="gray" className="font-normal text-gray-600"><span className='font-semibold'>{tracking?.user?.name || 'Unknown User'}</span> changed value of <span className='capitalize font-semibold'>{tracking.key ? tracking.key.replace(/_/g, ' ') : ''}</span> to
                                                 <span className='capitalize block'>{(tracking?.key === 'start_date' || tracking?.key === 'end_date') ? showFromattedDate(tracking.value) : <>{(tracking?.key === 'status' || tracking?.key === 'solution_type') ? getDropDownValue(tracking.value) : tracking.value}</>}
                                                 </span>
                                             </Typography>
