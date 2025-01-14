@@ -100,55 +100,48 @@ export default function Index({
   //     }
 
   // },[tablesNames])
-  const onSubmit = async (e) => {
-    e && e.preventDefault();
-    try {
-      setIsLoading(true);
-      const res = await axios.post(route("sql.run"), { sql_query: query?.query,id:props?.ziggy?.location.split('/').pop(),table_name:query.tablename });
-        if(typeof res?.data?.data==='string'){
-            let columnData = getSampleDAta(res?.data?.data);
-            let columnNameData = getSampleDAta(res?.data?.data_column);
-          
-            let tempObj = {};
-            let mainArray=[];
-            columnData.forEach((itm)=>{
-                itm.forEach((value,index)=>{
-                  
-                    if(value){
-                        if(columnNameData[index]){
+	 const onSubmit = async (e) => {
+	  e && e.preventDefault();
+	  try {
+		setIsLoading(true);
 
-                       
-                        if(columnNameData[index][0]){
-                         
+		const res = await axios.post(route("sql.run"), { 
+		  sql_query: query?.query,
+		  id: props?.ziggy?.location.split('/').pop(),
+		  table_name: query?.tablename,
+		});
 
-                                tempObj[removeQuote(columnNameData[index][0])]=removeQuote(value);
+		// Log the response for debugging
+		console.log("Response:", res?.data);  // Inspect the whole response structure
 
-                        }
-                    }
-                    }
-                })
-                mainArray.push(tempObj);
-                tempObj={};
-            })
-            mainArray= mainArray.filter((itm)=>{
-              return  Object.keys(itm).length !== 0
-            })
-            setResponse(mainArray);
-        }
-        else{
+		// Check if response is valid JSON data or HTML error page
+		if (res?.data && typeof res?.data === 'object') {
+		  // If it's a valid object (expected response format), set the response data
+		  setResponse(res?.data?.data || []);  // Update with actual data if available
+		} else {
+		  // Handle case when HTML or error response is received
+		  setErrorMsg("Query execution failed or invalid response received");
+		  setResponse([]);  // Clear response data
+		}
 
-            setResponse(res?.data?.data);
-        }
-      setErrorMsg("");
-    } catch (err) {
-   
-      setErrorMsg(err?.response?.data?.error.message);
-      setResponse([]);
-    } finally {
-      setIsLoading(false);
-      setIsTableSelect(false);
-    }
-  };
+		setErrorMsg("");  // Clear any previous error message
+	  } catch (err) {
+		// Log the entire error object for debugging
+		console.error("Error:", err);
+		console.error("Error Response:", err?.response?.data);
+
+		// Display error messages depending on the backend response
+		if (err?.response?.data?.error?.message) {
+		  setErrorMsg(err?.response?.data?.error?.message);
+		} else {
+		  setErrorMsg("An unknown error occurred.");
+		}
+
+		setResponse([]);  // Clear response data
+	  } finally {
+		setIsLoading(false);
+	  }
+	};
 
   useEffect(() => {
     if (isTableSelect) {
@@ -337,7 +330,7 @@ export default function Index({
             <div className="flex justify-between">
               <div>
                 <InputError
-                  message={errorMsg}
+                 /*  message={errorMsg} */
                   className="mt-0 font-medium text-red-500"
                 />
               </div>
@@ -350,7 +343,17 @@ export default function Index({
               </Button>
             </div>
           </Card>
-          <ShowResponse data={response} />
+		  
+          {/* Conditionally display response */}
+			{errorMsg ? (
+			  <div className="text-red-500">{errorMsg}</div>
+			) : response?.length > 0 ? (
+			  <div className="mt-8">
+				<pre className="whitespace-pre-wrap">{JSON.stringify(response, null, 2)}</pre>
+			  </div>
+			) : (
+			  <p>No data to display</p>
+			)}
         </div>
       </div>
     </Authenticated>

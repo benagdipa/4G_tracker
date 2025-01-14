@@ -633,6 +633,7 @@ class ComposerStaticInitb3c3b7c1ee3b69d12359b9c698576689
         'App\\Providers\\AppServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AppServiceProvider.php',
         'App\\Rules\\LowercaseWithUnderscore' => __DIR__ . '/../..' . '/app/Rules/LowercaseWithUnderscore.php',
         'App\\Services\\FreqTuningService' => __DIR__ . '/../..' . '/app/Services/FreqTuningService.php',
+        'App\\Services\\TrinoHttpService' => __DIR__ . '/../..' . '/app/Services/TrinoHttpService.php',
         'Attribute' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',
         'Brick\\Math\\BigDecimal' => __DIR__ . '/..' . '/brick/math/src/BigDecimal.php',
         'Brick\\Math\\BigInteger' => __DIR__ . '/..' . '/brick/math/src/BigInteger.php',
