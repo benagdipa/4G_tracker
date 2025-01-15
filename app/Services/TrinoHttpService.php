@@ -14,8 +14,8 @@ class TrinoHttpService
     public function __construct()
     {
         $this->server = "localhost"; // e.g., http://your-trino-server:8080
-        $this->username = "SVC_THO_PRD_FW_PERF";
-        $this->password = "ext";
+        $this->username = "username";
+        $this->password = "pass";
     }
 
     public function runQuery($sqlQuery)
