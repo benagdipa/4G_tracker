@@ -76,7 +76,7 @@ export default function Authenticated({ user, children }) {
                                     <Link href={route('settings.index')} >
                                     <ListItem className={`py-3 rounded-none text-white`}>
                                             <ListItemPrefix className='mr-3'><DatabaseZapIcon size={20} /></ListItemPrefix>
-                                            <span className='font-semibold text-sm'>SQL Import</span>
+                                            <span className='font-semibold text-sm'>SQL Explorer</span>
                                         </ListItem>
                                     </Link>
                                     </List>

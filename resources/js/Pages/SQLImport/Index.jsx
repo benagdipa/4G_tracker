@@ -1,8 +1,8 @@
 import InputError from "@/Components/InputError";
 import InputLabel from "@/Components/InputLabel";
 import Authenticated from "@/Layouts/AuthenticatedLayout";
-import { Head, Link, useForm,usePage } from "@inertiajs/react";
-import { Button, Card, Typography, useSelect } from "@material-tailwind/react";
+import { Head, Link, usePage } from "@inertiajs/react";
+import { Button, Card, Typography } from "@material-tailwind/react";
 import axios from "axios";
 import React, { useEffect, useState, useMemo } from "react";
 import { Table2, ChevronRight, ChevronDown, Play } from "lucide-react";
@@ -15,13 +15,10 @@ export default function Index({
   columnsName,
   dbtype
 }) {
-  console.log(dbtype)
   const { props } = usePage();
   const [query, setQuery] = useState();
   const [tablesList, setTablesList] = useState([]);
   const [columnsList, setColumnsList] = useState([]);
-  const [columnsListByTable, setColumnsListByTable] = useState([]);
-  const [isTableSelect, setIsTableSelect] = useState(true);
   const [selectedTableName, setSelectedTableName] = useState({});
   const [errorMsg, setErrorMsg] = useState("");
   const [response, setResponse] = useState([]);
@@ -30,16 +27,15 @@ export default function Index({
   const [importErrorMsg, setImportErrorMsg] = useState("");
   const [importSuccessMsg, setImportSuccessMsg] = useState("");
 
+  // State to control visibility of the table panel
+  const [isTablePanelVisible, setIsTablePanelVisible] = useState(true);
+
   const getSampleDAta = (data) => {
     if (typeof data === "string") {
       let newTableName = data.replace("Password: ", "");
-    
-      // Split the data by commas
       const dataArray = newTableName.split("\n");
       let tempObj = [];
-      let tempSecondVAlue = [];
       dataArray.forEach((itm) => {
-        // return itm.replace(/\\/g, 'a');
         tempObj.push(itm.split(/,(?=\")/));
       });
       return tempObj;
@@ -48,106 +44,75 @@ export default function Index({
 
   useEffect(() => {
     let customTablesNames = [];
-
     let customColumnsName = [];
-    if (
-      typeof tablesNames === "string" ||
-
-      typeof columnsName === "string"
-    ) {
+    if (typeof tablesNames === "string" || typeof columnsName === "string") {
       customTablesNames = getSampleDAta(tablesNames);
-
       customColumnsName = getSampleDAta(columnsName);
-   
+
       let tableColumns = {};
 
       customColumnsName.forEach((row) => {
-        const [table, column,data_type] = row;
+        const [table, column, data_type] = row;
         if (table) {
           if (!tableColumns[table]) {
             tableColumns[table] = [];
           }
-          // Push the column to the corresponding table array
-          tableColumns[table].push({column_name:column,data_type:data_type});
+          tableColumns[table].push({ column_name: column, data_type: data_type });
         }
       });
 
-        setColumnsList(
-            tableColumns
-        );
-      
+      setColumnsList(tableColumns);
       setTablesList(customTablesNames);
     } else {
       setTablesList(tablesNames);
- 
-        setColumnsList(columnsName);
+      setColumnsList(columnsName);
     }
-
   }, [tablesNames, columnsName]);
-  // useEffect(()=>{
-  //     if(typeof tablesNames==='string'){
-  //         let newTableName=tablesNames.replace('Password:','');
 
-  //         // Split the data by commas
-  //         const dataArray = newTableName.split('\n');
-  //         let tempObj=[];
-  //         let tempSecondVAlue=[];
-  //      dataArray.forEach((itm)=>{
-  //             // return itm.replace(/\\/g, 'a');
-  //             tempObj.push(itm.split(','));
-  //         })
-  //         console.log(tempObj);
-  //     }
+  const onSubmit = async (e) => {
+    e && e.preventDefault();
+    try {
+      setIsLoading(true);
+      const res = await axios.post(route("sql.run"), { sql_query: query?.query, id: props?.ziggy?.location.split('/').pop(), table_name: query.tablename });
+      if (typeof res?.data?.data === 'string') {
+        let columnData = getSampleDAta(res?.data?.data);
+        let columnNameData = getSampleDAta(res?.data?.data_column);
 
-  // },[tablesNames])
-	 const onSubmit = async (e) => {
-	  e && e.preventDefault();
-	  try {
-		setIsLoading(true);
-
-		const res = await axios.post(route("sql.run"), { 
-		  sql_query: query?.query,
-		  id: props?.ziggy?.location.split('/').pop(),
-		  table_name: query?.tablename,
-		});
-
-		// Log the response for debugging
-		console.log("Response:", res?.data);  // Inspect the whole response structure
-
-		// Check if response is valid JSON data or HTML error page
-		if (res?.data && typeof res?.data === 'object') {
-		  // If it's a valid object (expected response format), set the response data
-		  setResponse(res?.data?.data || []);  // Update with actual data if available
-		} else {
-		  // Handle case when HTML or error response is received
-		  setErrorMsg("Query execution failed or invalid response received");
-		  setResponse([]);  // Clear response data
-		}
-
-		setErrorMsg("");  // Clear any previous error message
-	  } catch (err) {
-		// Log the entire error object for debugging
-		console.error("Error:", err);
-		console.error("Error Response:", err?.response?.data);
-
-		// Display error messages depending on the backend response
-		if (err?.response?.data?.error?.message) {
-		  setErrorMsg(err?.response?.data?.error?.message);
-		} else {
-		  setErrorMsg("An unknown error occurred.");
-		}
-
-		setResponse([]);  // Clear response data
-	  } finally {
-		setIsLoading(false);
-	  }
-	};
+        let tempObj = {};
+        let mainArray = [];
+        columnData.forEach((itm) => {
+          itm.forEach((value, index) => {
+            if (value) {
+              if (columnNameData[index]) {
+                if (columnNameData[index][0]) {
+                  tempObj[removeQuote(columnNameData[index][0])] = removeQuote(value);
+                }
+              }
+            }
+          });
+          mainArray.push(tempObj);
+          tempObj = {};
+        });
+        mainArray = mainArray.filter((itm) => Object.keys(itm).length !== 0);
+        setResponse(mainArray);
+      } else {
+        setResponse(res?.data?.data);
+      }
+      setErrorMsg("");
+    } catch (err) {
+      setErrorMsg(err?.response?.data?.error.message);
+      setResponse([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (isTableSelect) {
+    if (isTablePanelVisible) {
       onSubmit();
     }
-  }, [isTableSelect]);
+  }, [isTablePanelVisible]);
+
   const handleImportBtn = async () => {
     if (response?.length > 0) {
       try {
@@ -161,6 +126,7 @@ export default function Index({
       }
     }
   };
+
   const defaultColDef = useMemo(() => ({
     filter: true,
   }));
@@ -169,14 +135,11 @@ export default function Index({
     e.stopPropagation();
     let tempSelectedTableName = {};
     tempSelectedTableName[tablename] = true;
-
     setSelectedTableName(tempSelectedTableName);
-
-    setQuery({tablename:removeQuote(tablename),query:`select * from ${removeQuote(tablename)}`});
-    setIsTableSelect(true);
+    setQuery({ tablename: removeQuote(tablename), query: `select * from ${removeQuote(tablename)}` });
   };
+
   const onHandleSelectTable = (e, tablename) => {
-  
     e.stopPropagation();
     const tempSelectedTableName = { ...selectedTableName };
     if (tempSelectedTableName[tablename]) {
@@ -186,32 +149,30 @@ export default function Index({
     }
     setSelectedTableName(tempSelectedTableName);
   };
-  const removeQuote=(data)=>{
-   
-    if(data.includes('"')){
+
+  const removeQuote = (data) => {
+    if (data.includes('"')) {
       return data.replace(/"/g, '');
     }
     return data;
-  }
+  };
 
   const ShowResponse = ({ data }) => {
-  
-    if (data?.length > 0) { 
+    if (data?.length > 0) {
       const allKeys = Array.from(
         new Set(data.flatMap((item) => Object.keys(item)))
       );
       const changedData = allKeys.map((itm, index) => {
         return { field: itm, headerName: itm };
       });
-     
+
       return (
         <div className="mt-8">
           <div
-            className="ag-theme-quartz w-full" // applying the Data Grid theme
-            style={{ height: data?.length > 5 ? 500 : 200 }} // the Data Grid will fill the size of the parent container
+            className="ag-theme-quartz w-full"
+            style={{ height: data?.length > 5 ? 500 : 200 }}
           >
             <AgGridReact
-              //   ref={gridRef}
               rowData={data}
               columnDefs={changedData}
               defaultColDef={defaultColDef}
@@ -258,79 +219,97 @@ export default function Index({
           <div className="flex items-center justify-between">
             <div className="">
               <Typography variant={"h3"} className="tracking-tight">
-                SQL Import
+                SQL Explorer
               </Typography>
               <ul className="flex gap-1 text-gray-600 text-sm">
                 <li>
                   <Link href={route("dashboard")}>Dashboard</Link>
                 </li>
                 <li>/</li>
-                {/* <li><Link href={route('sql.import')}>SQL Import</Link></li> */}
               </ul>
             </div>
           </div>
         </div>
       </div>
-      <div className="flex w-full mt-6 ">
-        <div className=" ml-2">
-          <div className=" bg-white shadow rounded py-3 px-5">
+
+      {/* Button to toggle table visibility */}
+      <div className="flex justify-start mb-4">
+        <Button
+          size="sm"
+          variant="outlined"
+          color="blue"
+          onClick={() => setIsTablePanelVisible(!isTablePanelVisible)}
+        >
+          {isTablePanelVisible ? "Hide Tables" : "Show Tables"}
+        </Button>
+      </div>
+
+      {/* Main Content Section */}
+      <div className="flex w-full mt-6">
+        {/* Table Panel */}
+        <div
+          className={`transition-all duration-300 ease-in-out ${isTablePanelVisible ? "block" : "hidden"}`}
+        >
+          <div className="bg-white shadow rounded py-3 px-5">
             <h1 className="mb-2 text-xl font-bold">Tables</h1>
             <div className="">
               <ul>
                 {tablesList.map((itm, index) => {
-                  let whichOne= dbtype==='starburst'?itm[0]: itm;
-           
+                  let whichOne = dbtype === 'starburst' ? itm[0] : itm;
+
                   return (
-                    <>
-                    { whichOne ?
-                    <div key={itm} className="">
-                      <div
-                        className="font-medium text-sm flex justify-between items-center mb-1 cursor-pointer text-gray-700 dark:text-gray-300 gap-2"
-                        onClick={(e) => onHandleSelectTable(e, typeof itm==='string'? itm:itm[0])}
-                      >
-                        <div className="flex items-center gap-2">
-                          {selectedTableName[ typeof itm==='string'? itm:itm[0]] ? (
-                            <ChevronDown size="16" />
-                          ) : (
-                            <ChevronRight size="16" />
+                    <div key={itm}>
+                      {whichOne && (
+                        <div>
+                          <div
+                            className="font-medium text-sm flex justify-between items-center mb-1 cursor-pointer text-gray-700 dark:text-gray-300 gap-2"
+                            onClick={(e) => onHandleSelectTable(e, typeof itm === 'string' ? itm : itm[0])}
+                          >
+                            <div className="flex items-center gap-2">
+                              {selectedTableName[typeof itm === 'string' ? itm : itm[0]] ? (
+                                <ChevronDown size="16" />
+                              ) : (
+                                <ChevronRight size="16" />
+                              )}
+                              <Table2 size="16" />
+                              {removeQuote(typeof itm === 'string' ? itm : itm[0])}
+                            </div>
+                            <div title="play">
+                              <Play
+                                size={12}
+                                fill="#000"
+                                onClick={(e) => onHandleRunSql(e, typeof itm === 'string' ? itm : itm[0])}
+                              />
+                            </div>
+                          </div>
+                          {selectedTableName[typeof itm === 'string' ? itm : itm[0]] && (
+                            <DbTableColumns columnsByTable={columnsList[typeof itm === 'string' ? itm : itm[0]]} />
                           )}
-                          <Table2 size="16" />
-                          {removeQuote( typeof itm==='string'? itm:itm[0])}
                         </div>
-                        <div title="play">
-                          <Play
-                            size={12}
-                            fill="#000"
-                            onClick={(e) => onHandleRunSql(e,  typeof itm==='string'? itm:itm[0])}
-                          />
-                        </div>
-                      </div>
-                      {selectedTableName[typeof itm==='string'? itm:itm[0]] && (
-                        <DbTableColumns columnsByTable={columnsList[typeof itm==='string'? itm:itm[0]]} />
                       )}
-                    </div>:null
-                    }
-                    </>
+                    </div>
                   );
                 })}
               </ul>
             </div>
           </div>
         </div>
-        <div className="w-[90%] filter-wrapper px-4">
+
+        {/* SQL Code Section */}
+        <div className="w-[70%] filter-wrapper px-4">
           <Card className="w-full px-6 py-4">
-            <InputLabel value={"SQl Code"} className="mb-2" />
+            <InputLabel value={"SQL Code"} className="mb-2" />
             <textarea
               className="border rounded-md border-gray-300 text-base font-medium focus:ring-0"
               rows={3}
               value={query?.query}
-              onChange={(e) => setQuery({tablename:removeQuote(e.target.value.split(' ').pop()),query:e.target.value})}
+              onChange={(e) => setQuery({ tablename: removeQuote(e.target.value.split(' ').pop()), query: e.target.value })}
             />
 
             <div className="flex justify-between">
               <div>
                 <InputError
-                 /*  message={errorMsg} */
+                  message={errorMsg}
                   className="mt-0 font-medium text-red-500"
                 />
               </div>
@@ -343,17 +322,7 @@ export default function Index({
               </Button>
             </div>
           </Card>
-		  
-          {/* Conditionally display response */}
-			{errorMsg ? (
-			  <div className="text-red-500">{errorMsg}</div>
-			) : response?.length > 0 ? (
-			  <div className="mt-8">
-				<pre className="whitespace-pre-wrap">{JSON.stringify(response, null, 2)}</pre>
-			  </div>
-			) : (
-			  <p>No data to display</p>
-			)}
+          <ShowResponse data={response} />
         </div>
       </div>
     </Authenticated>

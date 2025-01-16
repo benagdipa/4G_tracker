@@ -8,20 +8,11 @@ use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use App\Services\TrinoHttpService;
 
 use Response;
 use PDO;
 class SQLImportController extends Controller
 {
-	protected $trinoService;
-
-	// Dependency Injection in the constructor
-	public function __construct(TrinoHttpService $trinoService)
-	{
-		$this->trinoService = $trinoService;
-	}
-
     public function index($id)
     {
 
@@ -71,20 +62,35 @@ class SQLImportController extends Controller
             $columnsByTable = [];
         
             if ($db->dbtype == 'mysql') {
-                // Fetch all table names
                 $tables = DB::select('SHOW TABLES');
-                $databaseName = $db->database;
-                $column = "";
-        
-                // Iterate over each table and fetch its columns
-                foreach ($tables as $table) {
-                    $tableName = $table->$column;
-                    $tablesNames[] = $tableName;
-        
-                    // Fetch columns of the table
-                    $columns = DB::select("SHOW COLUMNS FROM $tableName");
-                    $columnsByTable[$tableName] = $columns;
-                }
+				// Get the database name dynamically
+				$databaseName = DB::connection()->getDatabaseName();
+				$tablesNames = [];
+				$columnsByTable = [];
+
+				// Iterate over each table and fetch its columns
+				foreach ($tables as $table) {
+					// Access the table name dynamically using the property 'Tables_in_<database_name>'
+					$tableName = $table->{'Tables_in_' . $databaseName};
+
+					// Add table name to the array
+					$tablesNames[] = $tableName;
+
+					// Fetch columns of the table, making sure to escape the table name with backticks
+					$columns = DB::select("SHOW COLUMNS FROM `{$tableName}`");
+					//dd($columns);
+					// Store the columns by table
+					// Map columns to match the expected keys: 'column_name' and 'data_type'
+					$columns = array_map(function ($column) {
+						return [
+							'column_name' => $column->Field,  // map 'Field' to 'column_name'
+							'data_type' => $column->Type,     // map 'Type' to 'data_type'
+						];
+					}, $columns);
+
+					// Store the columns by table
+					$columnsByTable[$tableName] = $columns;
+				}
             } elseif ($db->dbtype == 'pgsql') {
                 // Fetch all table names
                 $tables = DB::select("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public'");
@@ -103,7 +109,7 @@ class SQLImportController extends Controller
             }
         }
         } catch (\Exception $e) {
-           // return response()->json(['error' => ['message' => $e->getMessage()]], 500);
+            return response()->json(['error' => ['message' => $e->getMessage()]], 500);
         }
        
 
@@ -124,11 +130,10 @@ class SQLImportController extends Controller
         if ($validator->fails()) {
             return response()->json(['error' => array('message' => 'SQL code is required.')], 500);
         }
-		$sql_code = $request->input('sql_query');
+        $sql_code = $request->input('sql_query');
         $result = $this->db_connection($request->input('id'),$sql_code,$request->input('table_name'));
       
         return $result;
-      
     }
 
     public function db_connection($id,$sql_code,$table_name)
@@ -141,7 +146,7 @@ class SQLImportController extends Controller
 
             try {
                 if($db->dbtype=='starburst'){
-                  /* $command = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.'  --user '.$db->username.' --password --execute " '.$sql_code .' limit 1" --insecure';
+                    $command = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.'  --user '.$db->username.' --password --execute " '.$sql_code .' limit 1" --insecure';
                     $command3 = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.'  --user '.$db->username.' --password --execute "SELECT  column_name
                     FROM information_schema.columns
                     WHERE table_schema = \'' . $db->database . '\'
@@ -152,17 +157,7 @@ class SQLImportController extends Controller
                         $output=$this->get_db_data($command,$password);
                         $output3=$this->get_db_data($command3,$password);
             
-                    return response()->json(['data' => $output,'data_column' => $output3], 200);*/
-					
-					try {
-						//$sqlQuery = $request->input('sql_code');  // Example query, replace with dynamic query if needed
-						$response = $this->trinoService->runQuery($sql_code);
-
-						// Handle the response from Trino
-						return response()->json($response);
-					} catch (\Exception $e) {
-						return response()->json(['error' => ['message' => $e->getMessage()]], 500);
-					}
+                    return response()->json(['data' => $output,'data_column' => $output3], 200);
                 }
                 else{
 

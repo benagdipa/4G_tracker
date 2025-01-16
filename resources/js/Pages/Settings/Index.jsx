@@ -181,7 +181,7 @@ export default function Index({ auth, db }) {
           <div className="flex items-center justify-between w-full">
             <div className="">
               <Typography variant={"h3"} className="tracking-tight">
-                SQL Import
+                SQL Explorer
               </Typography>
               <ul className="flex gap-1 text-gray-600 text-sm">
                 <li>
