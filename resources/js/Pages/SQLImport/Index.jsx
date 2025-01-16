@@ -50,7 +50,6 @@ export default function Index({
       customColumnsName = getSampleDAta(columnsName);
 
       let tableColumns = {};
-
       customColumnsName.forEach((row) => {
         const [table, column, data_type] = row;
         if (table) {

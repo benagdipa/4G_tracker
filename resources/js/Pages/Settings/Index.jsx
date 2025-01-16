@@ -120,8 +120,7 @@ export default function Index({ auth, db }) {
     editable: false,
     filter: false,
     cellRenderer: SaveDeleteComponent,}
-   
-  
+    
   ]
   const defaultColDef = useMemo(() => ({
     flex: 1,
