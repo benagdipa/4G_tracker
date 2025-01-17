@@ -144,20 +144,24 @@ class SQLImportController extends Controller
         if ($db) {
 
             try {
-                if($db->dbtype=='starburst'){
-                    $command = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.'  --user '.$db->username.' --password --execute " '.$sql_code .' limit 1" --insecure';
-                    $command3 = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.'  --user '.$db->username.' --password --execute "SELECT  column_name
-                    FROM information_schema.columns
-                    WHERE table_schema = \'' . $db->database . '\'
-                    and table_name = \'' . $table_name . '\'"; --insecure';
-                    $password = $db->password;
-          
-                     
-                        $output=$this->get_db_data($command,$password);
-                        $output3=$this->get_db_data($command3,$password);
-            
-                    return response()->json(['data' => $output,'data_column' => $output3], 200);
-                }
+               if($db->dbtype == 'starburst'){
+					$command = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.'  --user '.$db->username.' --password --execute " '.$sql_code .' limit 1" --insecure';
+					$command3 = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.' --user '.$db->username.' --password --execute "SELECT column_name
+					FROM information_schema.columns
+					WHERE table_schema = \'' . $db->database . '\'
+					and table_name = \'' . $table_name . '\'"; --insecure';
+					$password = $db->password;
+
+					$output = $this->get_db_data($command, $password);
+					$output3 = $this->get_db_data($command3, $password);
+
+					// Check if $output3 is blank and set a default empty array if so
+					if (empty($output3)) {
+						$output3 = [[]];  // Ensure it's an array with a blank structure
+					}
+
+					return response()->json(['data' => $output, 'data_column' => $output3], 200);
+				}
                 else{
 
                
