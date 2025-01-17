@@ -295,7 +295,7 @@ export default function Index({
         </div>
 
         {/* SQL Code Section */}
-        <div className="w-[70%] filter-wrapper px-4">
+        <div className={`transition-all duration-300 ease-in-out ${isTablePanelVisible ? "w-[70%]" : "w-full"} filter-wrapper px-4`}>
           <Card className="w-full px-6 py-4">
             <InputLabel value={"SQL Code"} className="mb-2" />
             <textarea
