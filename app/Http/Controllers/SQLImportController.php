@@ -22,9 +22,7 @@ class SQLImportController extends Controller
         try {
             if($db->dbtype=='starburst'){
                 $command = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.'  --user '.$db->username.' --password --execute "show tables" --insecure';
-                $command3 = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.'  --user '.$db->username.' --password --execute "SELECT table_name, column_name, data_type
-                FROM information_schema.columns
-                WHERE table_schema = \'' . $db->database . '\'"; --insecure';
+                $command3 = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.'  --user '.$db->username.' --password --execute "SELECT table_name, column_name, data_type FROM information_schema.columns WHERE table_schema = \'' . $db->database . '\'" --insecure';
           
                 $password =  $db->password;
                     $output=$this->get_db_data($command,$password);
@@ -145,11 +143,8 @@ class SQLImportController extends Controller
 
             try {
                if($db->dbtype == 'starburst'){
-					$command = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.'  --user '.$db->username.' --password --execute " '.$sql_code .' limit 1" --insecure';
-					$command3 = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.' --user '.$db->username.' --password --execute "SELECT column_name
-					FROM information_schema.columns
-					WHERE table_schema = \'' . $db->database . '\'
-					and table_name = \'' . $table_name . '\'"; --insecure';
+					$command = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.'  --user '.$db->username.' --password --execute " '.$sql_code .' limit 100" --insecure';
+					$command3 = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.' --user '.$db->username.' --password --execute "SELECT column_name FROM information_schema.columns WHERE table_schema = \'' . $db->database . '\' AND table_name = \'' . $table_name . '\'" --insecure';
 					$password = $db->password;
 
 					$output = $this->get_db_data($command, $password);
