@@ -7,7 +7,7 @@ use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-
+use Illuminate\Support\Facades\Log;
 use Response;
 use PDO;
 class SQLImportController extends Controller
@@ -145,8 +145,11 @@ class SQLImportController extends Controller
                if($db->dbtype == 'starburst'){
 					$command = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.'  --user '.$db->username.' --password --execute " '.$sql_code .' limit 100" --insecure';
 					$command3 = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.' --user '.$db->username.' --password --execute "SELECT column_name FROM information_schema.columns WHERE table_schema = \'' . $db->database . '\' AND table_name = \'' . $table_name . '\'" --insecure';
+					
+					// Log the query using Laravel's Log facade
+					Log::info('Executing SQL Query for starburst DB:', ['command' => $command3]);
 					$password = $db->password;
-
+					
 					$output = $this->get_db_data($command, $password);
 					$output3 = $this->get_db_data($command3, $password);
 
