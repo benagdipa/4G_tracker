@@ -203,25 +203,15 @@ export default function Index({
               )}
             </div>
             <div className="flex gap-2">
+             
+              {/* Export Button */}
               <Button
                 variant="gradient"
                 size="sm"
                 className="capitalize"
-                onClick={handleImportBtn}
-                disabled={isImporting}
-              >
-                Import Data
-              </Button>
-              {/* Export Button */}
-              <Button
-                variant="outlined"
-                size="sm"
-                color="blue"
-                className="capitalize"
                 onClick={() => gridApiRef.current.api.exportDataAsCsv()}
               >
-                <Download size={16} className="mr-2" />
-                Export Data
+                Export
               </Button>
             </div>
           </div>
