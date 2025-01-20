@@ -4,8 +4,8 @@ import Authenticated from "@/Layouts/AuthenticatedLayout";
 import { Head, Link, usePage } from "@inertiajs/react";
 import { Button, Card, Typography } from "@material-tailwind/react";
 import axios from "axios";
-import React, { useEffect, useState, useMemo } from "react";
-import { Table2, ChevronRight, ChevronDown, Play } from "lucide-react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
+import { Table2, ChevronRight, ChevronDown, Play, Download } from "lucide-react";
 import { AgGridReact } from "ag-grid-react";
 import DbTableColumns from "@/Components/Wntd/DbTableColumns";
 
@@ -29,6 +29,8 @@ export default function Index({
 
   // State to control visibility of the table panel
   const [isTablePanelVisible, setIsTablePanelVisible] = useState(true);
+
+  const gridApiRef = useRef(null); // Reference to the grid API
 
   const getSampleDAta = (data) => {
     if (typeof data === "string") {
@@ -128,6 +130,8 @@ export default function Index({
 
   const defaultColDef = useMemo(() => ({
     filter: true,
+    sortable: true,
+    resizable: true
   }));
 
   const onHandleRunSql = (e, tablename) => {
@@ -172,8 +176,11 @@ export default function Index({
             style={{ height: data?.length > 5 ? 500 : 200 }}
           >
             <AgGridReact
+              ref={gridApiRef}
               rowData={data}
               columnDefs={changedData}
+              pagination={true}
+              paginationPageSize={10} // Pagination for the grid
               defaultColDef={defaultColDef}
             />
           </div>
@@ -195,15 +202,28 @@ export default function Index({
                 </Typography>
               )}
             </div>
-            <Button
-              variant="gradient"
-              size="sm"
-              className="capitalize"
-              onClick={handleImportBtn}
-              disabled={isImporting}
-            >
-              Import Data
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="gradient"
+                size="sm"
+                className="capitalize"
+                onClick={handleImportBtn}
+                disabled={isImporting}
+              >
+                Import Data
+              </Button>
+              {/* Export Button */}
+              <Button
+                variant="outlined"
+                size="sm"
+                color="blue"
+                className="capitalize"
+                onClick={() => gridApiRef.current.api.exportDataAsCsv()}
+              >
+                <Download size={16} className="mr-2" />
+                Export Data
+              </Button>
+            </div>
           </div>
         </div>
       );
