@@ -143,8 +143,13 @@ class SQLImportController extends Controller
 
             try {
                if($db->dbtype == 'starburst'){
-					$command = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.'  --user '.$db->username.' --password --execute " '.$sql_code .' limit 100" --insecure';
-					$command3 = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.' --user '.$db->username.' --password --execute "SELECT column_name FROM information_schema.columns WHERE table_schema = \'' . $db->database . '\' AND table_name = \'' . $table_name . '\'" --insecure';
+					// Exploding the table name to separate schema and table
+					$table_parts = explode('.', $table_name);
+					// Get the table name only (last part of the array)
+					$table_name_only = end($table_parts);
+					
+					$command = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.'  --user '.$db->username.' --password --execute " '.$sql_code .'" --insecure';
+					$command3 = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.' --user '.$db->username.' --password --execute "SELECT column_name FROM information_schema.columns WHERE table_schema = \'' . $db->database . '\' AND table_name = \'' . $table_name_only . '\'" --insecure';
 					
 					// Log the query using Laravel's Log facade
 					Log::info('Executing SQL Query for starburst DB:', ['command' => $command3]);

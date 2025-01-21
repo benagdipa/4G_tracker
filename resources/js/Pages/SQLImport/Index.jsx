@@ -74,7 +74,22 @@ export default function Index({
     e && e.preventDefault();
     try {
       setIsLoading(true);
-      const res = await axios.post(route("sql.run"), { sql_query: query?.query, id: props?.ziggy?.location.split('/').pop(), table_name: query.tablename });
+	  // Regular expression to capture the table name after the FROM clause
+		let tableNameMatch = query?.query.match(/FROM\s+([a-zA-Z0-9_]+)/i);
+
+		let tname = null;  // Initialize tname variable to null
+
+		// Check if a table name is found in the query, otherwise use fallback from query.tablename
+		if (tableNameMatch && tableNameMatch[1]) {
+			
+			tname = tableNameMatch[1];  // Extract the table name from the match
+		} 
+		else 
+		{
+			tname = query?.tablename;  // Fallback to the predefined table name in query.tablename
+		}
+		//alert(tname);
+      const res = await axios.post(route("sql.run"), { sql_query: query?.query, id: props?.ziggy?.location.split('/').pop(), table_name: tname });
       if (typeof res?.data?.data === 'string') {
         let columnData = getSampleDAta(res?.data?.data);
         let columnNameData = getSampleDAta(res?.data?.data_column);
