@@ -75,7 +75,7 @@ export default function Index({
     try {
       setIsLoading(true);
 	  // Regular expression to capture the table name after the FROM clause
-		let tableNameMatch = query?.query.match(/FROM\s+([a-zA-Z0-9_]+)/i);
+		let tableNameMatch = query?.query.match(/FROM\s+([a-zA-Z0-9_$#@.\[\]`]+)/i);
 
 		let tname = null;  // Initialize tname variable to null
 

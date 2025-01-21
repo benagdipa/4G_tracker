@@ -127,6 +127,7 @@ class SQLImportController extends Controller
         if ($validator->fails()) {
             return response()->json(['error' => array('message' => 'SQL code is required.')], 500);
         }
+		
         $sql_code = $request->input('sql_query');
         $result = $this->db_connection($request->input('id'),$sql_code,$request->input('table_name'));
       
@@ -152,7 +153,8 @@ class SQLImportController extends Controller
 					$command3 = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.' --user '.$db->username.' --password --execute "SELECT column_name FROM information_schema.columns WHERE table_schema = \'' . $db->database . '\' AND table_name = \'' . $table_name_only . '\'" --insecure';
 					
 					// Log the query using Laravel's Log facade
-					Log::info('Executing SQL Query for starburst DB:', ['command' => $command3]);
+					Log::info('command1:', ['command' => $command]);
+					Log::info('command2', ['command' => $command3]);
 					$password = $db->password;
 					
 					$output = $this->get_db_data($command, $password);
