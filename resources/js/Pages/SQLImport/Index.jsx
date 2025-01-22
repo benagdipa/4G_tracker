@@ -9,6 +9,11 @@ import { Table2, ChevronRight, ChevronDown, Play, Download } from "lucide-react"
 import { AgGridReact } from "ag-grid-react";
 import DbTableColumns from "@/Components/Wntd/DbTableColumns";
 
+// Import AceEditor components
+import AceEditor from "react-ace";
+import "ace-builds/src-noconflict/mode-sql"; // For SQL syntax
+import "ace-builds/src-noconflict/theme-twilight"; // For a dark theme (you can change this)
+
 export default function Index({
   auth,
   tablesNames,
@@ -74,21 +79,18 @@ export default function Index({
     e && e.preventDefault();
     try {
       setIsLoading(true);
-	  // Regular expression to capture the table name after the FROM clause
-		let tableNameMatch = query?.query.match(/FROM\s+([a-zA-Z0-9_$#@.\[\]`]+)/i);
+      // Regular expression to capture the table name after the FROM clause
+      let tableNameMatch = query?.query.match(/FROM\s+([a-zA-Z0-9_$#@.\[\]`]+)/i);
 
-		let tname = null;  // Initialize tname variable to null
+      let tname = null;  // Initialize tname variable to null
 
-		// Check if a table name is found in the query, otherwise use fallback from query.tablename
-		if (tableNameMatch && tableNameMatch[1]) {
-			
-			tname = tableNameMatch[1];  // Extract the table name from the match
-		} 
-		else 
-		{
-			tname = query?.tablename;  // Fallback to the predefined table name in query.tablename
-		}
-		//alert(tname);
+      // Check if a table name is found in the query, otherwise use fallback from query.tablename
+      if (tableNameMatch && tableNameMatch[1]) {
+        tname = tableNameMatch[1];  // Extract the table name from the match
+      } else {
+        tname = query?.tablename;  // Fallback to the predefined table name in query.tablename
+      }
+
       const res = await axios.post(route("sql.run"), { sql_query: query?.query, id: props?.ziggy?.location.split('/').pop(), table_name: tname });
       if (typeof res?.data?.data === 'string') {
         let columnData = getSampleDAta(res?.data?.data);
@@ -218,7 +220,6 @@ export default function Index({
               )}
             </div>
             <div className="flex gap-2">
-             
               {/* Export Button */}
               <Button
                 variant="gradient"
@@ -319,15 +320,28 @@ export default function Index({
           </div>
         </div>
 
-        {/* SQL Code Section */}
+        {/* SQL Code Section with AceEditor */}
         <div className={`transition-all duration-300 ease-in-out ${isTablePanelVisible ? "w-[70%]" : "w-full"} filter-wrapper px-4`}>
           <Card className="w-full px-6 py-4">
             <InputLabel value={"SQL Code"} className="mb-2" />
-            <textarea
-              className="border rounded-md border-gray-300 text-base font-medium focus:ring-0"
-              rows={3}
+            {/* AceEditor for SQL code */}
+            <AceEditor
+              mode="sql"
+              theme="twilight"
+              name="sql_query_editor"
               value={query?.query}
-              onChange={(e) => setQuery({ tablename: removeQuote(e.target.value.split(' ').pop()), query: e.target.value })}
+              onChange={(newValue) => setQuery({ tablename: removeQuote(newValue.split(' ').pop()), query: newValue })}
+              width="100%"
+              height="200px"
+              fontSize={14}
+              showPrintMargin={false}
+              showGutter={true}
+              highlightActiveLine={true}
+              setOptions={{
+                enableBasicAutocompletion: true,
+                enableLiveAutocompletion: true,
+                enableSnippets: true,
+              }}
             />
 
             <div className="flex justify-between">

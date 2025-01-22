@@ -149,8 +149,37 @@ class SQLImportController extends Controller
 					// Get the table name only (last part of the array)
 					$table_name_only = end($table_parts);
 					
+					// Check if the query already contains 'LIMIT' clause (case-insensitive)
+					if (stripos($sql_code, "LIMIT") === false) {
+						// Add LIMIT to the query
+						$sql_code .= " LIMIT 5000";  // You can change the number 10 to whatever limit you need
+					}
+					if(strpos($sql_code, '*')===FALSE) 
+					{
+						// Check if the query contains a SELECT statement and extract column names
+						preg_match('/SELECT\s+(.*?)\s+FROM/i', $sql_code, $matches);						
+
+						if (isset($matches[1])) {
+							// Extract the column names from the SELECT part
+							$columns = array_map('trim', explode(',', $matches[1]));
+
+							// Get the column names for the IN(...) clause
+							$column_str = implode("','", $columns);
+
+							// Add the column_name IN(...) clause
+							$columns_clause = "AND column_name IN('".$column_str."')";
+						}
+						
+						
+					}
+					else
+					{
+						$columns_clause = "";
+					}
+					
+															
 					$command = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.'  --user '.$db->username.' --password --execute " '.$sql_code .'" --insecure';
-					$command3 = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.' --user '.$db->username.' --password --execute "SELECT column_name FROM information_schema.columns WHERE table_schema = \'' . $db->database . '\' AND table_name = \'' . $table_name_only . '\'" --insecure';
+					$command3 = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.' --user '.$db->username.' --password --execute "SELECT column_name FROM information_schema.columns WHERE table_schema = \'' . $db->database . '\' AND table_name = \'' . $table_name_only . '\' '.$columns_clause.'" --insecure';
 					
 					// Log the query using Laravel's Log facade
 					Log::info('command1:', ['command' => $command]);
