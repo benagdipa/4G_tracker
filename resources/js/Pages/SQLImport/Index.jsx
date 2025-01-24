@@ -13,6 +13,7 @@ import DbTableColumns from "@/Components/Wntd/DbTableColumns";
 import AceEditor from "react-ace";
 import "ace-builds/src-noconflict/mode-sql"; // For SQL syntax
 import "ace-builds/src-noconflict/theme-twilight"; // For a dark theme (you can change this)
+import "ace-builds/src-noconflict/ext-language_tools"; // For autocompletion
 
 export default function Index({
   auth,
@@ -236,14 +237,24 @@ export default function Index({
     }
   };
 
+  const handleDragStart = (e, table) => {
+    e.dataTransfer.setData("text/plain", table);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const table = e.dataTransfer.getData("text/plain");
+    setQuery({ tablename: removeQuote(table), query: `SELECT * FROM ${removeQuote(table)}` });
+  };
+
   return (
     <Authenticated user={auth?.user}>
       <Head title="Wireless Sites" />
-      <div className="top-section p-4">
+	  {/* <div className="top-section p-4">
         <div className="bg-white shadow rounded py-3 px-5 flex justify-between items-center">
           <div className="flex items-center justify-between">
             <div className="">
-              <Typography variant={"h3"} className="tracking-tight">
+              <Typography variant={"h1"} className="tracking-tight">
                 SQL Explorer
               </Typography>
               <ul className="flex gap-1 text-gray-600 text-sm">
@@ -255,10 +266,10 @@ export default function Index({
             </div>
           </div>
         </div>
-      </div>
+      </div>*/}
 
       {/* Button to toggle table visibility */}
-      <div className="flex justify-start mb-4">
+      <div className="flex justify-start mb-2"> {/* Reduced margin-bottom */}
         <Button
           size="sm"
           variant="outlined"
@@ -270,12 +281,12 @@ export default function Index({
       </div>
 
       {/* Main Content Section */}
-      <div className="flex w-full mt-6">
+      <div className="flex w-full mt-4"> {/* Reduced margin-top */}
         {/* Table Panel */}
         <div
           className={`transition-all duration-300 ease-in-out ${isTablePanelVisible ? "block" : "hidden"}`}
         >
-          <div className="bg-white shadow rounded py-3 px-5">
+          <div className="bg-white shadow rounded py-0 px-5"> {/* Top and bottom padding set to 0 */}
             <h1 className="mb-2 text-xl font-bold">Tables</h1>
             <div className="">
               <ul>
@@ -289,6 +300,8 @@ export default function Index({
                           <div
                             className="font-medium text-sm flex justify-between items-center mb-1 cursor-pointer text-gray-700 dark:text-gray-300 gap-2"
                             onClick={(e) => onHandleSelectTable(e, typeof itm === 'string' ? itm : itm[0])}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, typeof itm === 'string' ? itm : itm[0])}
                           >
                             <div className="flex items-center gap-2">
                               {selectedTableName[typeof itm === 'string' ? itm : itm[0]] ? (
@@ -321,7 +334,7 @@ export default function Index({
         </div>
 
         {/* SQL Code Section with AceEditor */}
-        <div className={`transition-all duration-300 ease-in-out ${isTablePanelVisible ? "w-[70%]" : "w-full"} filter-wrapper px-4`}>
+        <div className={`transition-all duration-300 ease-in-out ${isTablePanelVisible ? "w-[70%]" : "w-full"} filter-wrapper px-4`} onDrop={handleDrop} onDragOver={(e) => e.preventDefault()}>
           <Card className="w-full px-6 py-4">
             <InputLabel value={"SQL Code"} className="mb-2" />
             {/* AceEditor for SQL code */}
