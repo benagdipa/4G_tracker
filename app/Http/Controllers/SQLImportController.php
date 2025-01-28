@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Response;
 use PDO;
 class SQLImportController extends Controller
@@ -25,8 +26,29 @@ class SQLImportController extends Controller
                 $command3 = 'java -jar '.$filePath.' --server '. $db->host.':'. $db->port .' --catalog '.$db->catalog.'  --schema '. $db->database.'  --user '.$db->username.' --password --execute "SELECT table_name, column_name, data_type FROM information_schema.columns WHERE table_schema = \'' . $db->database . '\'" --insecure';
           
                 $password =  $db->password;
-                    $output=$this->get_db_data($command,$password);
-                    $output3=$this->get_db_data($command3,$password);
+                				
+				$cacheKeyTables = 'db_tables_' . $db->host . ':' . $db->port . '_' . $db->catalog . '_' . $db->username;
+				$cacheKeyColumns = 'db_columns_' . $db->host . ':' . $db->port . '_' . $db->catalog . '_' . $db->username;
+
+				// Check if the cache exists and if the cached data is not empty
+				if (Cache::has($cacheKeyTables) && !empty(Cache::get($cacheKeyTables))) {
+					// Cache exists and has data, so retrieve it
+					$output = Cache::get($cacheKeyTables);
+				} else {
+					// Cache doesn't exist or is empty, so fetch new data
+					$output = $this->get_db_data($command, $password);
+					Cache::forever($cacheKeyTables, $output); // Cache the result forever
+				}
+
+				// Check for columns in cache
+				if (Cache::has($cacheKeyColumns) && !empty(Cache::get($cacheKeyColumns))) {
+					// Cache exists and has data, so retrieve it
+					$output3 = Cache::get($cacheKeyColumns);
+				} else {
+					// Cache doesn't exist or is empty, so fetch new data
+					$output3 = $this->get_db_data($command3, $password);
+					Cache::forever($cacheKeyColumns, $output3); // Cache the result forever
+				}
                 
                 return Inertia::render('SQLImport/Index', [
                     'tablesNames' => $output,

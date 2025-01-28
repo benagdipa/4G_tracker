@@ -24,6 +24,7 @@ export default function Index({
   const { props } = usePage();
   const [query, setQuery] = useState();
   const [tablesList, setTablesList] = useState([]);
+  const [filteredTables, setFilteredTables] = useState([]);  // State for filtered tables
   const [columnsList, setColumnsList] = useState([]);
   const [selectedTableName, setSelectedTableName] = useState({});
   const [errorMsg, setErrorMsg] = useState("");
@@ -35,6 +36,7 @@ export default function Index({
 
   // State to control visibility of the table panel
   const [isTablePanelVisible, setIsTablePanelVisible] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");  // State for the search term
 
   const gridApiRef = useRef(null); // Reference to the grid API
 
@@ -75,6 +77,19 @@ export default function Index({
       setColumnsList(columnsName);
     }
   }, [tablesNames, columnsName]);
+
+  // Filter tables based on search term
+  useEffect(() => {
+    if (searchTerm) {
+      setFilteredTables(
+        tablesList.filter((table) =>
+          table.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    } else {
+      setFilteredTables(tablesList); // If no search term, show all tables
+    }
+  }, [searchTerm, tablesList]);
 
   const onSubmit = async (e) => {
     e && e.preventDefault();
@@ -250,47 +265,46 @@ export default function Index({
   return (
     <Authenticated user={auth?.user}>
       <Head title="Wireless Sites" />
-	  {/* <div className="top-section p-4">
-        <div className="bg-white shadow rounded py-3 px-5 flex justify-between items-center">
-          <div className="flex items-center justify-between">
-            <div className="">
-              <Typography variant={"h1"} className="tracking-tight">
-                SQL Explorer
-              </Typography>
-              <ul className="flex gap-1 text-gray-600 text-sm">
-                <li>
-                  <Link href={route("dashboard")}>Dashboard</Link>
-                </li>
-                <li>/</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>*/}
-
+      
       {/* Button to toggle table visibility */}
-      <div className="flex justify-start mb-2"> {/* Reduced margin-bottom */}
+      <div className="flex justify-start mb-2">
         <Button
           size="sm"
           variant="outlined"
           color="blue"
           onClick={() => setIsTablePanelVisible(!isTablePanelVisible)}
         >
-          {isTablePanelVisible ? "Hide Tables" : "Show Tables"}
+          {isTablePanelVisible ? (
+            <ChevronDown size={16} />
+          ) : (
+            <ChevronRight size={16} />
+          )}
         </Button>
       </div>
 
       {/* Main Content Section */}
-      <div className="flex w-full mt-4"> {/* Reduced margin-top */}
+      <div className="flex w-full mt-4">
         {/* Table Panel */}
         <div
           className={`transition-all duration-300 ease-in-out ${isTablePanelVisible ? "block" : "hidden"}`}
         >
-          <div className="bg-white shadow rounded py-0 px-5"> {/* Top and bottom padding set to 0 */}
+          <div className="bg-white shadow rounded py-0 px-5">
             <h1 className="mb-2 text-xl font-bold">Tables</h1>
+            
+            {/* Search Input */}
+            <div className="mb-3">
+              <input
+                type="text"
+                placeholder="Search tables..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+
             <div className="">
               <ul>
-                {tablesList.map((itm, index) => {
+                {filteredTables.map((itm, index) => {
                   let whichOne = dbtype === 'starburst' ? itm[0] : itm;
 
                   return (
