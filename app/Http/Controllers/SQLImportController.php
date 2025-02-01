@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 use Response;
 use PDO;
 class SQLImportController extends Controller
@@ -31,7 +33,7 @@ class SQLImportController extends Controller
 				$cacheKeyColumns = 'db_columns_' . $db->host . ':' . $db->port . '_' . $db->catalog . '_' . $db->username;
 
 				// Check if the cache exists and if the cached data is not empty
-				if (Cache::has($cacheKeyTables) && !empty(Cache::get($cacheKeyTables))) {
+				/*if (Cache::has($cacheKeyTables) && !empty(Cache::get($cacheKeyTables))) {
 					// Cache exists and has data, so retrieve it
 					$output = Cache::get($cacheKeyTables);
 				} else {
@@ -48,8 +50,9 @@ class SQLImportController extends Controller
 					// Cache doesn't exist or is empty, so fetch new data
 					$output3 = $this->get_db_data($command3, $password);
 					Cache::forever($cacheKeyColumns, $output3); // Cache the result forever
-				}
-                
+				}*/
+                $output = $this->get_db_data($command, $password);
+				$output3 = $this->get_db_data($command3, $password);
                 return Inertia::render('SQLImport/Index', [
                     'tablesNames' => $output,
                     'columnsName'=>$output3,
@@ -339,4 +342,33 @@ class SQLImportController extends Controller
         }  
         return  $output;
     }
+	public function get_db_data_new($command, $password)
+	{
+		// Initialize the Symfony Process
+		$process = new Process([$command]);
+
+		// Set up environment variables if needed (e.g., setting up password via stdin)
+		$process->setInput($password . PHP_EOL);
+
+		// Execute the process and handle any exceptions
+		try {
+			// Run the process and get the output
+			$process->mustRun();
+			$output = $process->getOutput();
+			
+			// Optionally, handle stderr if you want to capture any error output
+			$errorOutput = $process->getErrorOutput();
+
+			// If there is any error output, you can log it or handle it here
+			if (!empty($errorOutput)) {
+				Log::error("Command Error: $errorOutput");
+			}
+
+			return $output;
+		} catch (ProcessFailedException $exception) {
+			// Handle the exception if the process fails
+			Log::error('Command failed: ' . $exception->getMessage());
+			return $exception->getMessage();
+		}
+	}
 }
