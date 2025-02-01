@@ -95,16 +95,14 @@ export default function Index({
     e && e.preventDefault();
     try {
       setIsLoading(true);
-      // Regular expression to capture the table name after the FROM clause
       let tableNameMatch = query?.query.match(/FROM\s+([a-zA-Z0-9_$#@.\[\]`]+)/i);
 
-      let tname = null;  // Initialize tname variable to null
+      let tname = null;
 
-      // Check if a table name is found in the query, otherwise use fallback from query.tablename
       if (tableNameMatch && tableNameMatch[1]) {
-        tname = tableNameMatch[1];  // Extract the table name from the match
+        tname = tableNameMatch[1];
       } else {
-        tname = query?.tablename;  // Fallback to the predefined table name in query.tablename
+        tname = query?.tablename;
       }
 
       const res = await axios.post(route("sql.run"), { sql_query: query?.query, id: props?.ziggy?.location.split('/').pop(), table_name: tname });
@@ -267,7 +265,7 @@ export default function Index({
       <Head title="Wireless Sites" />
       
       {/* Button to toggle table visibility */}
-      <div className="flex justify-start mb-2">
+      <div className="flex justify-start mb-2 pt-4 pl-4">
         <Button
           size="sm"
           variant="outlined"
@@ -286,7 +284,7 @@ export default function Index({
       <div className="flex w-full mt-4">
         {/* Table Panel */}
         <div
-          className={`transition-all duration-300 ease-in-out ${isTablePanelVisible ? "block" : "hidden"}`}
+          className={`transition-all duration-300 ease-in-out ${isTablePanelVisible ? "block" : "hidden"} h-[500px] overflow-y-auto`}
         >
           <div className="bg-white shadow rounded py-0 px-5">
             <h1 className="mb-2 text-xl font-bold">Tables</h1>
@@ -319,9 +317,9 @@ export default function Index({
                           >
                             <div className="flex items-center gap-2">
                               {selectedTableName[typeof itm === 'string' ? itm : itm[0]] ? (
-                                <ChevronDown size="16" />
+                                <ChevronDown size={16} />
                               ) : (
-                                <ChevronRight size="16" />
+                                <ChevronRight size={16} />
                               )}
                               <Table2 size="16" />
                               {removeQuote(typeof itm === 'string' ? itm : itm[0])}
